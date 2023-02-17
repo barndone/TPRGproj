@@ -114,8 +114,8 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    public bool CalculatePath(Vector2 startPos, Vector2 destPos, out Queue<Vector2> path)
-    {
-        
-    }
+    //public bool CalculatePath(Vector2 startPos, Vector2 destPos, out Queue<Vector2> path)
+    //{
+    //    
+    //}
 }
