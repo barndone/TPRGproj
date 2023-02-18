@@ -241,4 +241,10 @@ public class GridManager : MonoBehaviour
             tile.curScore = 0;
         }
     }
+
+    //given a starting point, an endpoint, and a list to output as the path, traverse to the destination point
+    public bool CalculatePath(Vector2 startPos, Vector2 destPos, out List<Vector2> path)
+    {
+
+    }
 }
