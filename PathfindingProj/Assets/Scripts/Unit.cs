@@ -110,11 +110,7 @@ public class Unit : MonoBehaviour
             if (hasPath)
             {
                 gridManager.map[mapPosition].Occupied = false;
-
-                foreach (Vector2 point in pathToMove)
-                {
-                    StartCoroutine(MoveToTile(gridManager.map[point]));
-                }
+                MoveAlongPath();
 
                 //  clean up the data
                 hasPath = false;
@@ -131,6 +127,7 @@ public class Unit : MonoBehaviour
                 {
                     tile.Visited = false;
                     tile.curScore = 0;
+                    tile.highlight = false;
                 }
 
                 gridManager.map[mapPosition].Occupied = true;
@@ -140,11 +137,11 @@ public class Unit : MonoBehaviour
         }
     }
 
-    IEnumerator MoveToTile(Tile tile)
+    IEnumerator MoveToTile(Tile target)
     {
-
-        transform.position = Vector2.Lerp(transform.position, tile.gameObj.transform.position, Time.deltaTime);
-        yield return null;
+        
+        transform.position = Vector2.Lerp(transform.position, target.gameObj.transform.position, 2.0f * Time.deltaTime);
+        while (transform.position != target.gameObj.transform.position) { yield return null; }
 
     }
 
@@ -199,5 +196,17 @@ public class Unit : MonoBehaviour
     {
         //  return whether the accessible tiles list contains the tile pointed to by that position
         return accessibleTiles.Contains(gridManager.map[tilePos]);
+    }
+
+    public IEnumerator MoveAlongPath()
+    {
+        //  iterate through the paths list
+        for (int i = 1; i < pathToMove.Count; i++)
+        {
+            //  store the tile we are moving from and the tile we are moving to
+            Tile to = gridManager.map[pathToMove[i]];
+
+            yield return StartCoroutine(MoveToTile(to));
+        }
     }
 }

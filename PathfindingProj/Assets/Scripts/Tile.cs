@@ -45,7 +45,10 @@ public class Tile : MonoBehaviour, IComparer<Tile>
     //  reference to the renderer for the tile
     public SpriteRenderer rend;
     //  reference to the color of the highlighted sprite
-    private Color highlightColor;
+
+    public bool highlight = false;
+    private Color mouseoverColor;
+    private Color prevColor;
 
     [SerializeField] private int moveScore = 1;
     [SerializeField] public int defaultDistance = 1;
@@ -59,11 +62,12 @@ public class Tile : MonoBehaviour, IComparer<Tile>
     [SerializeField] private bool visited;
     public bool Visited { get { return visited; } set { visited = value; } }
 
+
     void Start()
     {
         gridManager = GetComponentInParent<GridManager>();
         rend = GetComponent<SpriteRenderer>();
-        ColorUtility.TryParseHtmlString("#F3ED8B", out highlightColor);
+        ColorUtility.TryParseHtmlString("#F3ED8B", out mouseoverColor);
     }
 
     //  implementation of Compare for IComparer<Tile>
@@ -75,13 +79,13 @@ public class Tile : MonoBehaviour, IComparer<Tile>
 
     void OnMouseEnter()
     {
-
-        //rend.color = highlightColor;
+        prevColor = rend.color;
+        rend.color = mouseoverColor;
     }
 
     void OnMouseExit()
     {
-        //rend.color = Color.white;
+        rend.color = prevColor;
     }
 
     private void OnMouseOver()
@@ -102,13 +106,20 @@ public class Tile : MonoBehaviour, IComparer<Tile>
                     //  calc the path from the active unit to this tile's position on the map
                     //  mark that the active unit has a path
                     activeUnit.hasPath = gridManager.CalculatePath(activeUnit.mapPosition, mapPos, out path);
+
+                    //  show the path on the overworld
+                    foreach(Vector2 point in path)
+                    {
+                        gridManager.map[point].prevColor = gridManager.map[point].rend.color;
+                        gridManager.map[point].highlight = true;
+                    }
+
                     //  check if the active unit actually has a path (just in case)
                     if (activeUnit.hasPath)
                     {
                         //  copy assign
                         activeUnit.pathToMove = path;
                     }
-
                 }
             }
         }
@@ -116,5 +127,15 @@ public class Tile : MonoBehaviour, IComparer<Tile>
         {
             FindObjectOfType<GridManager>().UpdateTile(this.transform.position);
         }
+
+        if (gridManager.activeUnit != null)
+        {
+
+        }
+    }
+
+    void Update()
+    {
+
     }
 }
