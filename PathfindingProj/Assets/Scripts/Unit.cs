@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Unit : MonoBehaviour
@@ -18,6 +19,9 @@ public class Unit : MonoBehaviour
     [SerializeField] private Animator animator;
 
     public List<Tile> accessibleTiles = new List<Tile>();
+
+    public List<Vector2> pathToMove = new List<Vector2>();
+    public bool hasPath = false;
 
     private void Start()
     {
@@ -102,9 +106,46 @@ public class Unit : MonoBehaviour
                 }
                 gridManager.map[mapPosition].Occupied = true;
             }
+
+            if (hasPath)
+            {
+                gridManager.map[mapPosition].Occupied = false;
+
+                foreach (Vector2 point in pathToMove)
+                {
+                    StartCoroutine(MoveToTile(gridManager.map[point]));
+                }
+
+                //  clean up the data
+                hasPath = false;
+                mapPosition = pathToMove.Last();
+                pathToMove.Clear();
+
+                isSelected = false;
+                animator.SetBool("selected", isSelected);
+                gridManager.HideAccessibleTiles(this, accessibleTiles);
+                gridManager.activeUnit = null;
+                accessibleTiles.Clear();
+
+                foreach (Tile tile in gridManager.map.Values)
+                {
+                    tile.Visited = false;
+                    tile.curScore = 0;
+                }
+
+                gridManager.map[mapPosition].Occupied = true;
+            }
             transform.position = gridManager.map[mapPosition].gameObj.transform.position;
             currentTile = gridManager.map[mapPosition];
         }
+    }
+
+    IEnumerator MoveToTile(Tile tile)
+    {
+
+        transform.position = Vector2.Lerp(transform.position, tile.gameObj.transform.position, Time.deltaTime);
+        yield return null;
+
     }
 
     private void OnMouseEnter()
@@ -126,16 +167,37 @@ public class Unit : MonoBehaviour
             //  if the unit is now selected
             if (isSelected)
             {
-                //  show movement options
-                gridManager.ShowAccessibleTiles(this, out accessibleTiles);
+                //  if the grid doesn't have an active unit
+                if ( gridManager.activeUnit == null)
+                {
+                    //  pass that this is the active unit to the grid manager
+                    gridManager.activeUnit = this;
+                    //  show movement options
+                    gridManager.ShowAccessibleTiles(this, out accessibleTiles);
+                }
+                //  otherwise there is already an active unit
+                else
+                {
+                    //  dont wanna select this
+                    isSelected = false;
+                }
+
             }
             //  otherwise, they were unselected
             else
             {
                 //  hide movement options
                 gridManager.HideAccessibleTiles(this, accessibleTiles);
+                gridManager.activeUnit = null;
                 accessibleTiles.Clear();
             }
         }
+    }
+
+    //  check if the passed tile position is an accessible tile
+    public bool ValidTile(Vector2 tilePos)
+    {
+        //  return whether the accessible tiles list contains the tile pointed to by that position
+        return accessibleTiles.Contains(gridManager.map[tilePos]);
     }
 }

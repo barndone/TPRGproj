@@ -2,13 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Tile : MonoBehaviour
+public class Tile : MonoBehaviour, IComparer<Tile>
 {
     //  private field to mark whether the tile is occupied
     [SerializeField] private bool occupied;
 
     //  private field to mark whether or not the tile is an obstacle
     [SerializeField] private bool obstacle;
+
+    [SerializeField] private GridManager gridManager;
 
     public GameObject gameObj;
 
@@ -45,12 +47,13 @@ public class Tile : MonoBehaviour
     //  reference to the color of the highlighted sprite
     private Color highlightColor;
 
-    [SerializeField] private int distanceVal = 1;
+    [SerializeField] private int moveScore = 1;
     [SerializeField] public int defaultDistance = 1;
 
     public int curScore = 0;
+    public Tile prevTile = null;
 
-    public int DistanceVal { get { return distanceVal; } set { distanceVal = value; } }
+    public int MoveScore { get { return moveScore; } set { moveScore = value; } }
     public int DefaultDistance { get { return defaultDistance; } }
 
     [SerializeField] private bool visited;
@@ -58,8 +61,16 @@ public class Tile : MonoBehaviour
 
     void Start()
     {
+        gridManager = GetComponentInParent<GridManager>();
         rend = GetComponent<SpriteRenderer>();
         ColorUtility.TryParseHtmlString("#F3ED8B", out highlightColor);
+    }
+
+    //  implementation of Compare for IComparer<Tile>
+    public int Compare(Tile a, Tile b)
+    {
+        //  sorts based off of distanceVal
+        return a.moveScore.CompareTo(b.moveScore);
     }
 
     void OnMouseEnter()
@@ -77,7 +88,29 @@ public class Tile : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            Debug.Log("Path from: " + FindObjectOfType<Unit>().mapPosition + " to: " + CoordinateUtils.IsoWorldToDictionaryKey(this.transform.position));
+            //  is there an active unit?
+            if (gridManager.activeUnit != null)
+            {
+                Unit activeUnit = gridManager.activeUnit;
+
+                //  if so: check if this tile is accessible to the unit
+                if (activeUnit.ValidTile(mapPos))
+                {
+                    Debug.Log("Path from: " + activeUnit.mapPosition + " to: " + CoordinateUtils.IsoWorldToDictionaryKey(this.transform.position));
+                    //  since it's accessible initialize a path list
+                    List<Vector2> path = new List<Vector2>();
+                    //  calc the path from the active unit to this tile's position on the map
+                    //  mark that the active unit has a path
+                    activeUnit.hasPath = gridManager.CalculatePath(activeUnit.mapPosition, mapPos, out path);
+                    //  check if the active unit actually has a path (just in case)
+                    if (activeUnit.hasPath)
+                    {
+                        //  copy assign
+                        activeUnit.pathToMove = path;
+                    }
+
+                }
+            }
         }
         if (Input.GetMouseButtonDown(1))
         {

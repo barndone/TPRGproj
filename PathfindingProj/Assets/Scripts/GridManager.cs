@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour
@@ -24,6 +25,8 @@ public class GridManager : MonoBehaviour
     public Dictionary<Vector2, Tile> map;
 
     [SerializeField] private static int WATER_MOVE_COST = 5;
+
+    public Unit activeUnit = null;
 
     private void GenerateGrid()
     {
@@ -52,7 +55,7 @@ public class GridManager : MonoBehaviour
                 {
                     //  if it is a water sprite, mark it as an obstacle
                     newTile.Obstacle = true;
-                    newTile.DistanceVal = WATER_MOVE_COST;
+                    newTile.MoveScore = WATER_MOVE_COST;
                 }
 
                 newTileObj.transform.position = new Vector2(xPos, yPos);
@@ -106,7 +109,7 @@ public class GridManager : MonoBehaviour
                 //  convert it to LAND
                 rend.sprite = sprites[0];
                 tile.Obstacle = false;
-                tile.DistanceVal = tile.DefaultDistance;
+                tile.MoveScore = tile.DefaultDistance;
             }
             //  otherwise it is LAND
             else
@@ -114,7 +117,7 @@ public class GridManager : MonoBehaviour
                 //  make it.... NOT LAND
                 rend.sprite = sprites[1];
                 tile.Obstacle = true;
-                tile.DistanceVal = WATER_MOVE_COST;
+                tile.MoveScore = WATER_MOVE_COST;
             }
         }
     }
@@ -143,11 +146,11 @@ public class GridManager : MonoBehaviour
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(tilesToTraverse.Peek().North) && !tilesToTraverse.Contains(tilesToTraverse.Peek().North)
-                        && (tilesToTraverse.Peek().North.DistanceVal + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
+                        && (tilesToTraverse.Peek().North.MoveScore + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
                         && !tilesToTraverse.Peek().North.Occupied && !tilesToTraverse.Peek().North.Obstacle)
                     {
                         //  update the score of the tile
-                        tilesToTraverse.Peek().North.curScore += tilesToTraverse.Peek().North.DistanceVal + tilesToTraverse.Peek().curScore;
+                        tilesToTraverse.Peek().North.curScore += tilesToTraverse.Peek().North.MoveScore + tilesToTraverse.Peek().curScore;
                         //  if so, we can add it to the queue
                         tilesToTraverse.Enqueue(tilesToTraverse.Peek().North);
                     }
@@ -163,11 +166,11 @@ public class GridManager : MonoBehaviour
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(tilesToTraverse.Peek().East) && !tilesToTraverse.Contains(tilesToTraverse.Peek().East)
-                        && (tilesToTraverse.Peek().East.DistanceVal + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
+                        && (tilesToTraverse.Peek().East.MoveScore + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
                         && !tilesToTraverse.Peek().East.Occupied && !tilesToTraverse.Peek().East.Obstacle)
                     {
                         //  update the score of the tile
-                        tilesToTraverse.Peek().East.curScore += tilesToTraverse.Peek().East.DistanceVal + tilesToTraverse.Peek().curScore;
+                        tilesToTraverse.Peek().East.curScore += tilesToTraverse.Peek().East.MoveScore + tilesToTraverse.Peek().curScore;
                         //  if so, we can add it to the queue
                         tilesToTraverse.Enqueue(tilesToTraverse.Peek().East);
                     }
@@ -183,11 +186,11 @@ public class GridManager : MonoBehaviour
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(tilesToTraverse.Peek().South) && !tilesToTraverse.Contains(tilesToTraverse.Peek().South)
-                        && (tilesToTraverse.Peek().South.DistanceVal + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
+                        && (tilesToTraverse.Peek().South.MoveScore + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
                         && !tilesToTraverse.Peek().South.Occupied && !tilesToTraverse.Peek().South.Obstacle)
                     {
                         //  update the score of the tile
-                        tilesToTraverse.Peek().South.curScore += tilesToTraverse.Peek().South.DistanceVal + tilesToTraverse.Peek().curScore;
+                        tilesToTraverse.Peek().South.curScore += tilesToTraverse.Peek().South.MoveScore + tilesToTraverse.Peek().curScore;
                         //  if so, we can add it to the queue
                         tilesToTraverse.Enqueue(tilesToTraverse.Peek().South);
                     }
@@ -203,11 +206,11 @@ public class GridManager : MonoBehaviour
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(tilesToTraverse.Peek().West) && !tilesToTraverse.Contains(tilesToTraverse.Peek().West)
-                        && (tilesToTraverse.Peek().West.DistanceVal + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
+                        && (tilesToTraverse.Peek().West.MoveScore + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
                         && !tilesToTraverse.Peek().West.Occupied && !tilesToTraverse.Peek().West.Obstacle)
                     {
                         //  update the score of the tile
-                        tilesToTraverse.Peek().West.curScore += tilesToTraverse.Peek().West.DistanceVal + tilesToTraverse.Peek().curScore;
+                        tilesToTraverse.Peek().West.curScore += tilesToTraverse.Peek().West.MoveScore + tilesToTraverse.Peek().curScore;
                         //  if so, we can add it to the queue
                         tilesToTraverse.Enqueue(tilesToTraverse.Peek().West);
                     }
@@ -242,9 +245,227 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    //given a starting point, an endpoint, and a list to output as the path, traverse to the destination point
+    //  given a starting point, an endpoint, and a list to output as the path, traverse to the destination point
     public bool CalculatePath(Vector2 startPos, Vector2 destPos, out List<Vector2> path)
     {
+        //  open list for nodes we are currently processing
+        Queue<Tile> tilesToProcess = new Queue<Tile>();
+        //  closed list for already processed nodes
+        List<Vector2> processedTilePositions = new List<Vector2>();
 
+        path = new List<Vector2>();
+
+        //  push the tile at the startPos to the front of the open list
+        tilesToProcess.Enqueue(map[startPos]);
+
+        //  iterate from the start position until we find the destPos tile (visited == true)
+        do
+        {
+            //  cachce the current tile as Current (help readability)
+            Tile Current = tilesToProcess.Peek();
+            //  check if the tile we are processing has a tile to the north of it
+            if (Current.hasNorth())
+            {
+                //  cache the current North tile as North (help readability)
+                Tile North = Current.North;
+                //  check if the tile to the north of it has already been visited
+                if (!North.Visited)
+                {
+                    //  check if that tile position is not in processedTilePositions
+                    //  check if that tile is NOT Occupied or an Obstacle
+                    if (!processedTilePositions.Contains(North.MapPos) 
+                        && !North.Occupied
+                        && !North.Obstacle)
+                    {
+                        //  check if the tile we are looking at exists in the tilesToProcess queue
+                        if (tilesToProcess.Contains(North))
+                        {
+                            //  if it does, check if its score is greater than the current path:
+                            if (North.curScore > North.MoveScore + Current.curScore)
+                            {
+                                //  if so, re-assign current score to the lower score
+                                North.curScore = North.MoveScore + Current.curScore;
+                                //  change the prevTile ref to this tile
+                                North.prevTile = Current;
+                            }
+                            //  otherwise, do nothing
+                        }
+                        //  otherwise:
+                        else
+                        {
+                            //  update its current score
+                            North.curScore = Current.curScore + North.MoveScore;
+                            //  assign its previous tile to this one
+                            North.prevTile = Current;
+                            //  push it to the queue
+                            tilesToProcess.Enqueue(North);
+                        }
+                    }
+                }
+            }
+
+            //  check if the tile we are processing has a tile to the east of it
+            if (Current.hasEast())
+            {
+                //  cache the current east tile as east (help readability)
+                Tile East = Current.East;
+                //  check if the tile to the east of it has already been visited
+                if (!East.Visited)
+                {
+                    //  check if that tile position is not in processedTilePositions
+                    //  check if that tile is NOT Occupied or an Obstacle
+                    if (!processedTilePositions.Contains(East.MapPos)
+                        && !East.Occupied
+                        && !East.Obstacle)
+                    {
+                        //  check if the tile we are looking at exists in the tilesToProcess queue
+                        if (tilesToProcess.Contains(East))
+                        {
+                            //  if it does, check if its score is greater than the current path:
+                            if (East.curScore > East.MoveScore + Current.curScore)
+                            {
+                                //  if so, re-assign current score to the lower score
+                                East.curScore = East.MoveScore + Current.curScore;
+                                //  change the prevTile ref to this tile
+                                East.prevTile = Current;
+                            }
+                            //  otherwise, do nothing
+                        }
+                        //  otherwise:
+                        else
+                        {
+                            //  update its current score
+                            East.curScore = Current.curScore + East.MoveScore;
+                            //  assign its previous tile to this one
+                            East.prevTile = Current;
+                            //  push it to the queue
+                            tilesToProcess.Enqueue(East);
+                        }
+                    }
+                }
+            }
+
+            //  check if the tile we are processing has a tile to the south of it
+            if (Current.hasSouth())
+            {
+                //  cache the current south tile as south (help readability)
+                Tile South = Current.South;
+                //  check if the tile to the south of it has already been visited
+                if (!South.Visited)
+                {
+                    //  check if that tile position is not in processedTilePositions
+                    //  check if that tile is NOT Occupied or an Obstacle
+                    if (!processedTilePositions.Contains(South.MapPos)
+                        && !South.Occupied
+                        && !South.Obstacle)
+                    {
+                        //  check if the tile we are looking at exists in the tilesToProcess queue
+                        if (tilesToProcess.Contains(South))
+                        {
+                            //  if it does, check if its score is greater than the current path:
+                            if (South.curScore > South.MoveScore + Current.curScore)
+                            {
+                                //  if so, re-assign current score to the lower score
+                                South.curScore = South.MoveScore + Current.curScore;
+                                //  change the prevTile ref to this tile
+                                South.prevTile = Current;
+                            }
+                            //  otherwise, do nothing
+                        }
+                        //  otherwise:
+                        else
+                        {
+                            //  update its current score
+                            South.curScore = Current.curScore + South.MoveScore;
+                            //  assign its previous tile to this one
+                            South.prevTile = Current;
+                            //  push it to the queue
+                            tilesToProcess.Enqueue(South);
+                        }
+                    }
+                }
+            }
+
+            //  check if the tile we are processing has a tile to the west of it
+            if (Current.hasWest())
+            {
+                //  cache the current west tile as west (help readability)
+                Tile West = Current.West;
+                //  check if the tile to the west of it has already been visited
+                if (!West.Visited)
+                {
+                    //  check if that tile position is not in processedTilePositions
+                    //  check if that tile is NOT Occupied or an Obstacle
+                    if (!processedTilePositions.Contains(West.MapPos)
+                        && !West.Occupied
+                        && !West.Obstacle)
+                    {
+                        //  check if the tile we are looking at exists in the tilesToProcess queue
+                        if (tilesToProcess.Contains(West))
+                        {
+                            //  if it does, check if its score is greater than the current path:
+                            if (West.curScore > West.MoveScore + Current.curScore)
+                            {
+                                //  if so, re-assign current score to the lower score
+                                West.curScore = West.MoveScore + Current.curScore;
+                                //  change the prevTile ref to this tile
+                                West.prevTile = Current;
+                            }
+                            //  otherwise, do nothing
+                        }
+                        //  otherwise:
+                        else
+                        {
+                            //  update its current score
+                            West.curScore = Current.curScore + West.MoveScore;
+                            //  assign its previous tile to this one
+                            West.prevTile = Current;
+                            //  push it to the queue
+                            tilesToProcess.Enqueue(West);
+                        }
+                    }
+                }
+            }
+            //  mark the current node as visited
+            Current.Visited = true;
+
+            //  Add the position of the current tile to the processedTilePositions list and pop it from the queue
+            processedTilePositions.Add(tilesToProcess.Dequeue().MapPos);
+            tilesToProcess = new Queue<Tile>(tilesToProcess.OrderBy(x => x.MoveScore));
+
+        } while (!map[destPos].Visited || tilesToProcess.Count != 0);
+
+        //  check if the destination was reached
+        if (map[destPos].Visited)
+        {
+            //  if so, add the position to the path list
+            path.Add(destPos);
+
+            //  mark the current tile as the tile at the destPos
+            Tile current = map[destPos];
+            current.Visited = false;
+            //  while the path list does NOT contain the startPos
+            do
+            {
+                //  move current to the prevTile
+                current = current.prevTile;
+                //  add the position of the new current to the list
+                path.Add(current.MapPos);
+                current.Visited = false;
+
+            } while (!path.Contains(startPos));
+
+            //  reverse the list to get our path
+            path.Reverse();
+
+            //  return that we found a path
+            return true;
+        }
+        //  otherwise the destination could not be reached
+        else
+        {
+            //  return false with an empty list (for now)
+            return false;
+        }
     }
 }
