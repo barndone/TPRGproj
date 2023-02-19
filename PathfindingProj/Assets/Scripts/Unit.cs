@@ -23,126 +23,91 @@ public class Unit : MonoBehaviour
     public List<Vector2> pathToMove = new List<Vector2>();
     public bool hasPath = false;
 
+    [SerializeField] private float timeToWait = 0.5f;
+    private float timer;
+
+    int pathIndex = 1;
+
     private void Start()
     {
         mapPosition = CoordinateUtils.ConvertToIsometric(transform.position);
         currentTile = gridManager.map[mapPosition];
         currentTile.Occupied = true;
         animator = GetComponentInChildren<Animator>();
+        timer = timeToWait;
     }
 
     private void Update()
     {
+        //  if this unit is selected
         if (isSelected)
         {
-            //  testing purposes: handle movement
-            if (Input.GetKeyUp(KeyCode.A))
-            {
-                gridManager.map[mapPosition].Occupied = false;
-                mapPosition.y -= 1;
-                if (mapPosition.y < 0)
-                {
-                    mapPosition.y = 0;
-                }
-                //  if the tile is an obstacle:
-                if (gridManager.map[mapPosition].Obstacle || gridManager.map[mapPosition].Occupied
-                    || !accessibleTiles.Contains(gridManager.map[mapPosition]))
-                {
-                    //  reverse the change
-                    mapPosition.y += 1;
-                }
-                gridManager.map[mapPosition].Occupied = true;
-            }
-            else if (Input.GetKeyUp(KeyCode.D))
-            {
-                gridManager.map[mapPosition].Occupied = false;
-                mapPosition.y += 1;
-                if (mapPosition.y >= gridManager.Rows)
-                {
-                    mapPosition.y = gridManager.Rows - 1;
-                }
-                //  if the tile is an obstacle:
-                if (gridManager.map[mapPosition].Obstacle || gridManager.map[mapPosition].Occupied
-                    || !accessibleTiles.Contains(gridManager.map[mapPosition]))
-                {
-                    //  reverse the change
-                    mapPosition.y -= 1;
-                }
-                gridManager.map[mapPosition].Occupied = true;
-            }
-            else if (Input.GetKeyUp(KeyCode.S))
-            {
-                gridManager.map[mapPosition].Occupied = false;
-                mapPosition.x -= 1;
-                if (mapPosition.x < 0)
-                {
-                    mapPosition.x = 0;
-                }
-                //  if the tile is an obstacle:
-                //  if the tile is occupied:
-                //  OR if the tile is out of range
-                if (gridManager.map[mapPosition].Obstacle || gridManager.map[mapPosition].Occupied
-                    || !accessibleTiles.Contains(gridManager.map[mapPosition]))
-                {
-                    //  reverse the change
-                    mapPosition.x += 1;
-                }
-                gridManager.map[mapPosition].Occupied = true;
-            }
-            else if (Input.GetKeyUp(KeyCode.W))
-            {
-                gridManager.map[mapPosition].Occupied = false;
-                mapPosition.x += 1;
-                if (mapPosition.x >= gridManager.Columns)
-                {
-                    mapPosition.x = gridManager.Columns - 1;
-                }
-                //  if the tile is an obstacle:
-                if (gridManager.map[mapPosition].Obstacle || gridManager.map[mapPosition].Occupied
-                    || !accessibleTiles.Contains(gridManager.map[mapPosition]))
-                {
-                    //  reverse the change
-                    mapPosition.x -= 1;
-                }
-                gridManager.map[mapPosition].Occupied = true;
-            }
-
+            //  check if it has a path
             if (hasPath)
             {
-                gridManager.map[mapPosition].Occupied = false;
-                MoveAlongPath();
-
-                //  clean up the data
-                hasPath = false;
-                mapPosition = pathToMove.Last();
-                pathToMove.Clear();
-
-                isSelected = false;
-                animator.SetBool("selected", isSelected);
-                gridManager.HideAccessibleTiles(this, accessibleTiles);
-                gridManager.activeUnit = null;
-                accessibleTiles.Clear();
-
-                foreach (Tile tile in gridManager.map.Values)
+                //  if the wait time is less than or equal to 0
+                if (timer <= 0.0f)
                 {
-                    tile.Visited = false;
-                    tile.curScore = 0;
-                    tile.highlight = false;
+                    timer = timeToWait;
+                    //  if so, mark the current tile is unoccupied
+                    gridManager.map[mapPosition].Occupied = false;
+
+                    //  update the mapPosition to the difference between the current point along the math and the current map position
+                    //  ex: mapPos = {0,0}; point = {1,0}; delta is {1,0}
+                    mapPosition += (pathToMove[pathIndex] - mapPosition);
+
+                    //  update the transform of the unit in world space to the world space position of the new tile
+                    transform.position = gridManager.map[mapPosition].gameObj.transform.position;
+                    //  update currentTile reference
+                    currentTile = gridManager.map[mapPosition];
+
+                    //  incrememnt pathIndex
+                    pathIndex++;
+
+                    //  if the pathIndex is greater than or equal to the number of entries in pathToMove:
+                    if (pathIndex >= pathToMove.Count())
+                    {
+                        //  start cleanup
+                        //  clear path to move
+                        pathToMove.Clear();
+                        //  reset pathIndex to 1
+                        pathIndex = 1;
+                        //  mark that there is no longer a path
+                        hasPath = false;
+
+                        //  toggle this unit to not be selected
+                        isSelected = false;
+                        //  update the animation to not be selected
+                        animator.SetBool("selected", isSelected);
+
+                        //  hide the accessible tiles of the unit
+                        gridManager.HideAccessibleTiles(this, accessibleTiles);
+                        //  mark that there is no longer an active unit
+                        gridManager.activeUnit = null;
+                        //  clear the accessible tiles of the unit
+                        accessibleTiles.Clear();
+
+                        //  iterate through each tile on the map and reset the flags from Dijkstra algo
+                        foreach (Tile tile in gridManager.map.Values)
+                        {
+                            //  mark each tile as not visited
+                            tile.Visited = false;
+                            //  reset the current score
+                            tile.curScore = 0;
+                            //  remove the highlight
+                            tile.highlight = false;
+                        }
+                    }
+
+                    //  mark the current tile as occupied
+                    gridManager.map[mapPosition].Occupied = true;
                 }
-
-                gridManager.map[mapPosition].Occupied = true;
+                else
+                {
+                    timer -= Time.deltaTime;
+                }
             }
-            transform.position = gridManager.map[mapPosition].gameObj.transform.position;
-            currentTile = gridManager.map[mapPosition];
         }
-    }
-
-    IEnumerator MoveToTile(Tile target)
-    {
-        
-        transform.position = Vector2.Lerp(transform.position, target.gameObj.transform.position, 2.0f * Time.deltaTime);
-        while (transform.position != target.gameObj.transform.position) { yield return null; }
-
     }
 
     private void OnMouseEnter()
@@ -196,17 +161,5 @@ public class Unit : MonoBehaviour
     {
         //  return whether the accessible tiles list contains the tile pointed to by that position
         return accessibleTiles.Contains(gridManager.map[tilePos]);
-    }
-
-    public IEnumerator MoveAlongPath()
-    {
-        //  iterate through the paths list
-        for (int i = 1; i < pathToMove.Count; i++)
-        {
-            //  store the tile we are moving from and the tile we are moving to
-            Tile to = gridManager.map[pathToMove[i]];
-
-            yield return StartCoroutine(MoveToTile(to));
-        }
     }
 }

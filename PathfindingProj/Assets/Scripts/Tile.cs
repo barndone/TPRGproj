@@ -107,12 +107,12 @@ public class Tile : MonoBehaviour, IComparer<Tile>
                     //  mark that the active unit has a path
                     activeUnit.hasPath = gridManager.CalculatePath(activeUnit.mapPosition, mapPos, out path);
 
-                    //  show the path on the overworld
-                    foreach(Vector2 point in path)
-                    {
-                        gridManager.map[point].prevColor = gridManager.map[point].rend.color;
-                        gridManager.map[point].highlight = true;
-                    }
+                    ////  show the path on the overworld
+                    //foreach(Vector2 point in path)
+                    //{
+                    //    gridManager.map[point].prevColor = gridManager.map[point].rend.color;
+                    //    gridManager.map[point].highlight = true;
+                    //}
 
                     //  check if the active unit actually has a path (just in case)
                     if (activeUnit.hasPath)
@@ -132,10 +132,5 @@ public class Tile : MonoBehaviour, IComparer<Tile>
         {
 
         }
-    }
-
-    void Update()
-    {
-
     }
 }
