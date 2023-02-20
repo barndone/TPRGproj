@@ -134,6 +134,23 @@ public class GridManager : MonoBehaviour
         //  push the current tile to the front of the queue to begin iteration
         tilesToTraverse.Enqueue(movingUnit.currentTile);
 
+        int range = 0;
+
+        //  if the unit has NOT moved
+        if (!movingUnit.hasMoved && movingUnit.uiController.moveWish)
+        {
+            range = movingUnit.MaxMove;
+        }
+        //  if they have moved then they must need to act
+        else if (!movingUnit.hasActed && movingUnit.uiController.attackWish)
+        {
+            range = movingUnit.AttackRange;
+        }
+        else if (!movingUnit.hasActed && movingUnit.uiController.skillWish)
+        {
+            range = movingUnit.SkillRange;
+        }
+
         do
         {
             //  if the front tile of the queue has a valid north connection
@@ -146,7 +163,7 @@ public class GridManager : MonoBehaviour
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(tilesToTraverse.Peek().North) && !tilesToTraverse.Contains(tilesToTraverse.Peek().North)
-                        && (tilesToTraverse.Peek().North.MoveScore + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
+                        && (tilesToTraverse.Peek().North.MoveScore + tilesToTraverse.Peek().curScore) <= range
                         && !tilesToTraverse.Peek().North.Occupied && !tilesToTraverse.Peek().North.Obstacle)
                     {
                         //  update the score of the tile
@@ -166,7 +183,7 @@ public class GridManager : MonoBehaviour
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(tilesToTraverse.Peek().East) && !tilesToTraverse.Contains(tilesToTraverse.Peek().East)
-                        && (tilesToTraverse.Peek().East.MoveScore + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
+                        && (tilesToTraverse.Peek().East.MoveScore + tilesToTraverse.Peek().curScore) <= range
                         && !tilesToTraverse.Peek().East.Occupied && !tilesToTraverse.Peek().East.Obstacle)
                     {
                         //  update the score of the tile
@@ -186,7 +203,7 @@ public class GridManager : MonoBehaviour
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(tilesToTraverse.Peek().South) && !tilesToTraverse.Contains(tilesToTraverse.Peek().South)
-                        && (tilesToTraverse.Peek().South.MoveScore + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
+                        && (tilesToTraverse.Peek().South.MoveScore + tilesToTraverse.Peek().curScore) <= range
                         && !tilesToTraverse.Peek().South.Occupied && !tilesToTraverse.Peek().South.Obstacle)
                     {
                         //  update the score of the tile
@@ -206,7 +223,7 @@ public class GridManager : MonoBehaviour
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(tilesToTraverse.Peek().West) && !tilesToTraverse.Contains(tilesToTraverse.Peek().West)
-                        && (tilesToTraverse.Peek().West.MoveScore + tilesToTraverse.Peek().curScore) <= movingUnit.MaxMove
+                        && (tilesToTraverse.Peek().West.MoveScore + tilesToTraverse.Peek().curScore) <= range
                         && !tilesToTraverse.Peek().West.Occupied && !tilesToTraverse.Peek().West.Obstacle)
                     {
                         //  update the score of the tile
@@ -223,8 +240,17 @@ public class GridManager : MonoBehaviour
             //  break the loop if the open list is empty!
         } while (tilesToTraverse.Count != 0);
 
-        //  mark all of the accessible tiles magenta to show movement range
-        HighlightTiles(accessibleTiles, Color.magenta);
+        //  if the unit has not moved:
+        if (!movingUnit.hasMoved && movingUnit.uiController.moveWish)
+        {
+            //  mark all of the accessible tiles magenta to show movement range
+            HighlightTiles(accessibleTiles, Color.magenta);
+        }
+        //  if they have not acted:
+        else if (!movingUnit.hasActed && (movingUnit.uiController.attackWish || movingUnit.uiController.skillWish))
+        {
+            HighlightTiles(accessibleTiles, Color.red);
+        }
     }
 
     //  Method for hiding which tiles on the grid a unit is able to access
@@ -466,6 +492,22 @@ public class GridManager : MonoBehaviour
         {
             //  return false with an empty list (for now)
             return false;
+        }
+    }
+
+    public void ResetTiles()
+    {
+        //  iterate through each tile on the map and reset the flags from Dijkstra algo
+        foreach (Tile tile in map.Values)
+        {
+            //  mark each tile as not visited
+            tile.Visited = false;
+            //  reset the current score
+            tile.curScore = 0;
+            //  remove the highlight
+            tile.highlight = false;
+            tile.prevTile = null;
+            tile.rend.color = Color.white;
         }
     }
 }

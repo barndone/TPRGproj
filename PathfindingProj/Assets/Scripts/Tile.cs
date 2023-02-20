@@ -100,25 +100,28 @@ public class Tile : MonoBehaviour, IComparer<Tile>
                 //  if so: check if this tile is accessible to the unit
                 if (activeUnit.ValidTile(mapPos))
                 {
-                    Debug.Log("Path from: " + activeUnit.mapPosition + " to: " + CoordinateUtils.IsoWorldToDictionaryKey(this.transform.position));
-                    //  since it's accessible initialize a path list
-                    List<Vector2> path = new List<Vector2>();
-                    //  calc the path from the active unit to this tile's position on the map
-                    //  mark that the active unit has a path
-                    activeUnit.hasPath = gridManager.CalculatePath(activeUnit.mapPosition, mapPos, out path);
-
-                    ////  show the path on the overworld
-                    //foreach(Vector2 point in path)
-                    //{
-                    //    gridManager.map[point].prevColor = gridManager.map[point].rend.color;
-                    //    gridManager.map[point].highlight = true;
-                    //}
-
-                    //  check if the active unit actually has a path (just in case)
-                    if (activeUnit.hasPath)
+                    //  Logic for moving
+                    if (!activeUnit.hasMoved && activeUnit.uiController.moveWish)
                     {
-                        //  copy assign
-                        activeUnit.pathToMove = path;
+                        Debug.Log("Path from: " + activeUnit.mapPosition + " to: " + CoordinateUtils.IsoWorldToDictionaryKey(this.transform.position));
+                        //  since it's accessible initialize a path list
+                        List<Vector2> path = new List<Vector2>();
+                        //  calc the path from the active unit to this tile's position on the map
+                        //  mark that the active unit has a path
+                        activeUnit.hasPath = gridManager.CalculatePath(activeUnit.mapPosition, mapPos, out path);
+
+
+                        //  check if the active unit actually has a path (just in case)
+                        if (activeUnit.hasPath)
+                        {
+                            //  copy assign
+                            activeUnit.pathToMove = path;
+                        }
+                    }
+                    //  otherwise they are acting
+                    else
+                    {
+                        activeUnit.hasAction = true;
                     }
                 }
             }
@@ -126,11 +129,6 @@ public class Tile : MonoBehaviour, IComparer<Tile>
         if (Input.GetMouseButtonDown(1))
         {
             FindObjectOfType<GridManager>().UpdateTile(this.transform.position);
-        }
-
-        if (gridManager.activeUnit != null)
-        {
-
         }
     }
 }
