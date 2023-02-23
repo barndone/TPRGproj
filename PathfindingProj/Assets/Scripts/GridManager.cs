@@ -123,6 +123,7 @@ public class GridManager : MonoBehaviour
     }
 
     //  Method for showing which tiles on the grid a given unit is able to access
+    //  TODO: showacessible tiles for attack/skill do not look at moveScore
     public void ShowAccessibleTiles(Unit movingUnit, out List<Tile> accessibleTiles)
     {
         //  current tiles moved in relation to MaxMove
@@ -153,88 +154,143 @@ public class GridManager : MonoBehaviour
 
         do
         {
+            //  cache the current tile
+            Tile cur = tilesToTraverse.Peek();
             //  if the front tile of the queue has a valid north connection
-            if (tilesToTraverse.Peek().hasNorth())
+            if (cur.hasNorth())
             {
+                //  cache the north tile
+                Tile north = cur.North;
                 //  check to see if the north connection has NOT been visited
-                if (!tilesToTraverse.Peek().North.Visited)
+                if (!north.Visited)
                 {
                     //  check to see if the north value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
-                    if (!accessibleTiles.Contains(tilesToTraverse.Peek().North) && !tilesToTraverse.Contains(tilesToTraverse.Peek().North)
-                        && (tilesToTraverse.Peek().North.MoveScore + tilesToTraverse.Peek().curScore) <= range
-                        && !tilesToTraverse.Peek().North.Occupied && !tilesToTraverse.Peek().North.Obstacle)
+                    if (!accessibleTiles.Contains(north)
+                        && (north.MoveScore + cur.curScore) <= range
+                        && !north.Occupied && !north.Obstacle)
                     {
-                        //  update the score of the tile
-                        tilesToTraverse.Peek().North.curScore += tilesToTraverse.Peek().North.MoveScore + tilesToTraverse.Peek().curScore;
-                        //  if so, we can add it to the queue
-                        tilesToTraverse.Enqueue(tilesToTraverse.Peek().North);
+                        //  check if the tile we are looking at is currently in the tilesToTraverse queue
+                        if (tilesToTraverse.Contains(north))
+                        {
+                            //  if so, check if we should overwrite the score
+                            if (north.curScore > north.MoveScore + cur.curScore)
+                            {
+                                north.curScore = north.MoveScore + cur.curScore;
+                            }
+                        }
+                        else
+                        {
+                            //  update the score of the tile
+                            north.curScore += north.MoveScore + cur.curScore;
+                            //  if so, we can add it to the queue
+                            tilesToTraverse.Enqueue(north);
+                        }
                     }
                 }
             }
             //  if the front tile of the queue has a valid east connection
-            if (tilesToTraverse.Peek().hasEast())
+            if (cur.hasEast())
             {
+                Tile east = cur.East;
                 //  check to see if the east connection has NOT been visited
-                if (!tilesToTraverse.Peek().East.Visited)
+                if (!east.Visited)
                 {
                     //  check to see if the east value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
-                    if (!accessibleTiles.Contains(tilesToTraverse.Peek().East) && !tilesToTraverse.Contains(tilesToTraverse.Peek().East)
-                        && (tilesToTraverse.Peek().East.MoveScore + tilesToTraverse.Peek().curScore) <= range
-                        && !tilesToTraverse.Peek().East.Occupied && !tilesToTraverse.Peek().East.Obstacle)
+                    if (!accessibleTiles.Contains(east)
+                        && (east.MoveScore + cur.curScore) <= range
+                        && !east.Occupied && !east.Obstacle)
                     {
-                        //  update the score of the tile
-                        tilesToTraverse.Peek().East.curScore += tilesToTraverse.Peek().East.MoveScore + tilesToTraverse.Peek().curScore;
-                        //  if so, we can add it to the queue
-                        tilesToTraverse.Enqueue(tilesToTraverse.Peek().East);
+                        //  check if the tile we are looking at is currently in the tilesToTraverse queue
+                        if (tilesToTraverse.Contains(east))
+                        {
+                            //  if so, check if we should overwrite the score
+                            if (east.curScore > east.MoveScore + cur.curScore)
+                            {
+                                east.curScore = east.MoveScore + cur.curScore;
+                            }
+                        }
+                        else
+                        {
+                            //  update the score of the tile
+                            east.curScore += east.MoveScore + cur.curScore;
+                            //  if so, we can add it to the queue
+                            tilesToTraverse.Enqueue(east);
+                        }
                     }
                 }
             }
             //  if the front tile of the queue has a valid south connection
-            if (tilesToTraverse.Peek().hasSouth())
+            if (cur.hasSouth())
             {
+                Tile south = cur.South;
                 //  check to see if the south connection has NOT been visited
-                if (!tilesToTraverse.Peek().South.Visited)
+                if (!south.Visited)
                 {
                     //  check to see if the north value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
-                    if (!accessibleTiles.Contains(tilesToTraverse.Peek().South) && !tilesToTraverse.Contains(tilesToTraverse.Peek().South)
-                        && (tilesToTraverse.Peek().South.MoveScore + tilesToTraverse.Peek().curScore) <= range
-                        && !tilesToTraverse.Peek().South.Occupied && !tilesToTraverse.Peek().South.Obstacle)
+                    if (!accessibleTiles.Contains(south)
+                        && (south.MoveScore + cur.curScore) <= range
+                        && !south.Occupied && !south.Obstacle)
                     {
-                        //  update the score of the tile
-                        tilesToTraverse.Peek().South.curScore += tilesToTraverse.Peek().South.MoveScore + tilesToTraverse.Peek().curScore;
-                        //  if so, we can add it to the queue
-                        tilesToTraverse.Enqueue(tilesToTraverse.Peek().South);
+                        //  check if the tile we are looking at is currently in the tilesToTraverse queue
+                        if (tilesToTraverse.Contains(south))
+                        {
+                            //  if so, check if we should overwrite the score
+                            if (south.curScore > south.MoveScore + cur.curScore)
+                            {
+                                south.curScore = south.MoveScore + cur.curScore;
+                            }
+                        }
+                        else
+                        {
+                            //  update the score of the tile
+                            south.curScore += south.MoveScore + cur.curScore;
+                            //  if so, we can add it to the queue
+                            tilesToTraverse.Enqueue(south);
+                        }
                     }
                 }
             }
             //  if the front tile of the queue has a valid west connection
-            if (tilesToTraverse.Peek().hasWest())
+            if (cur.hasWest())
             {
+                Tile west = cur.West;
                 //  check to see if the west connection has NOT been visited
-                if (!tilesToTraverse.Peek().West.Visited)
+                if (!west.Visited)
                 {
                     //  check to see if the north value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
-                    if (!accessibleTiles.Contains(tilesToTraverse.Peek().West) && !tilesToTraverse.Contains(tilesToTraverse.Peek().West)
-                        && (tilesToTraverse.Peek().West.MoveScore + tilesToTraverse.Peek().curScore) <= range
-                        && !tilesToTraverse.Peek().West.Occupied && !tilesToTraverse.Peek().West.Obstacle)
+                    if (!accessibleTiles.Contains(west)
+                        && (west.MoveScore + cur.curScore) <= range
+                        && !west.Occupied && !west.Obstacle)
                     {
-                        //  update the score of the tile
-                        tilesToTraverse.Peek().West.curScore += tilesToTraverse.Peek().West.MoveScore + tilesToTraverse.Peek().curScore;
-                        //  if so, we can add it to the queue
-                        tilesToTraverse.Enqueue(tilesToTraverse.Peek().West);
+                        //  check if the tile we are looking at is currently in the tilesToTraverse queue
+                        if (tilesToTraverse.Contains(west))
+                        {
+                            //  if so, check if we should overwrite the score
+                            if (west.curScore > west.MoveScore + cur.curScore)
+                            {
+                                west.curScore = west.MoveScore + cur.curScore;
+                            }
+                        }
+                        else
+                        {
+                            //  update the score of the tile
+                            west.curScore += west.MoveScore + cur.curScore;
+                            //  if so, we can add it to the queue
+                            tilesToTraverse.Enqueue(west);
+                        }
                     }
                 }
             }
             //  assign the current tile as visited
-            tilesToTraverse.Peek().Visited = true;
+            cur.Visited = true;
             //  pop from the front of the queue and add it to the output list
             accessibleTiles.Add(tilesToTraverse.Dequeue());
             //  break the loop if the open list is empty!
