@@ -5,12 +5,16 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
-
-    [SerializeField] private int rows = 5; 
+    //  How many rows will the map be?
+    [SerializeField] private int rows = 5;
+    //  how many columns will the map be?
     [SerializeField] private int cols = 5;
+    //  public access field for rows
     public int Rows { get { return rows; } }
+    //  public access field for cols
     public int Columns { get { return cols; } }
 
+    //  size of the tiles
     [SerializeField] private float tileSize = 1;
 
     //  Serialized array of prefabs
@@ -18,20 +22,23 @@ public class GridManager : MonoBehaviour
     //  Serialized array of possible sprites
     [SerializeField] private Sprite[] sprites;
     
-    /// <summary>
-    /// Map representing the level:
-    /// Will start from top left and end at bottom right
-    /// </summary>
+    //  map representing the level
+    //  position of tile (0,0) maps to the tile NOT the gameObj
     public Dictionary<Vector2, Tile> map;
 
-    [SerializeField] private static int WATER_MOVE_COST = 5;
+    //  const field for water move cost
+    [SerializeField] const int WATER_MOVE_COST = 5;
 
+    //  reference to the currently active unit
     public Unit activeUnit = null;
 
+    //  method for generating the tile map
     private void GenerateGrid()
     {
+        //  initialize new map
         map = new Dictionary<Vector2, Tile>();
 
+        //  initialize a new tile
         Tile newTile;
 
         //  while row is less than rows:
@@ -40,59 +47,83 @@ public class GridManager : MonoBehaviour
             //  while col is less than cols
             for (int col = 0; col < cols; col++)
             {
+                //  create a random tile from the prefab list
                 var randomTile = gridTilePrefab[Random.Range(0, gridTilePrefab.Length)];
+                //  instantiate a new object of that tile at the transform of the parent (grid manager)
                 GameObject newTileObj = Instantiate(randomTile, transform);
 
+                //  get the Tile component
                 newTile = newTileObj.GetComponent<Tile>();
 
+                //  calculate the X offset from the gridManager for the isometric grid
                 float xPos = (row * tileSize + col * tileSize) / 2.0f;
+                //  calculate the Y offset from the gridManager for the isometric grid
                 float yPos = (row * tileSize - col * tileSize) / 4.0f;
 
+                //  access to the renderer of the tile
                 SpriteRenderer rend = newTileObj.GetComponent<SpriteRenderer>();
 
+                //  check wether the tile will be a water block or a regular block
                 //  sprites[1] will be the water sprite
                 if (rend.sprite == sprites[1])
                 {
                     //  if it is a water sprite, mark it as an obstacle
                     newTile.Obstacle = true;
+                    //  change its movescore to the const field for water cost
                     newTile.MoveScore = WATER_MOVE_COST;
                 }
 
+                //  transform the position of the new tile gameobj to the x and y offsets
                 newTileObj.transform.position = new Vector2(xPos, yPos);
 
+                //  rename the object for the inspector
                 newTileObj.gameObject.name = "Grid Space: " + row.ToString() + ", " + col.ToString();
 
+                //  assign the reference of the tile gameObj in the Tile class
                 newTile.gameObj = newTileObj;
+                //  assign the mapPos of the tile to the row, col
                 newTile.MapPos = new Vector2(row, col);
 
+                //  add this tile to the map
                 map.Add(new Vector2(row, col), newTile);
 
+                //  checks for applying connections
                 //  if the row is not the first row:
                 if (row > 0)
                 {
-          
+                    //  initialize previous tile ref
                     Tile prevTile;
+                    //  try to get the value of the tile a row before this tile
                     map.TryGetValue(new Vector2(row - 1, col), out prevTile);
+                    //  assign the east ref in prevtile to this tile
                     prevTile.East = newTile;
+                    //  assign the west ref in this tile to prevtile
                     newTile.West = prevTile;
                 }
                 //  if this is not the first column:
                 if (col > 0)
                 {
+                    //  initialize previous tile ref
                     Tile prevTile;
+                    //  try to get the value of the tile a column before this tile
                     map.TryGetValue(new Vector2(row, col - 1), out prevTile);
+                    //  assign the south ref in prevTile to this tile
                     prevTile.South = newTile;
+                    //  assign the north ref in this tile to prevTile
                     newTile.North = prevTile;
                 }
             }
         }
     }
 
-    void Start()
+    //  on starting
+    void Awake()
     {
+        //  generate the grid!
         GenerateGrid();
     }
 
+    //  function to swap the tile between states (for testing purposes only)
     public void UpdateTile (Vector2 pos)
     {
         Vector2 dictKey = CoordinateUtils.IsoWorldToDictionaryKey(pos);
@@ -123,7 +154,6 @@ public class GridManager : MonoBehaviour
     }
 
     //  Method for showing which tiles on the grid a given unit is able to access
-    //  TODO: showacessible tiles for attack/skill do not look at moveScore
     public void ShowAccessibleTiles(Unit movingUnit, out List<Tile> accessibleTiles)
     {
         //  current tiles moved in relation to MaxMove
@@ -135,7 +165,10 @@ public class GridManager : MonoBehaviour
         //  push the current tile to the front of the queue to begin iteration
         tilesToTraverse.Enqueue(movingUnit.currentTile);
 
+        //  variable for tracking how far the unit can move, attack, or use their skill
         int range = 0;
+        //  separate variable for move cost to account for differences between movement and attacking/skills
+        int moveCost = 0;
 
         //  if the unit has NOT moved
         if (!movingUnit.hasMoved && movingUnit.uiController.moveWish)
@@ -143,10 +176,12 @@ public class GridManager : MonoBehaviour
             range = movingUnit.MaxMove;
         }
         //  if they have moved then they must need to act
+        //  range for attacking
         else if (!movingUnit.hasActed && movingUnit.uiController.attackWish)
         {
             range = movingUnit.AttackRange;
         }
+        //  range for using skills
         else if (!movingUnit.hasActed && movingUnit.uiController.skillWish)
         {
             range = movingUnit.SkillRange;
@@ -164,26 +199,39 @@ public class GridManager : MonoBehaviour
                 //  check to see if the north connection has NOT been visited
                 if (!north.Visited)
                 {
+                    //  if the unit needs to move:
+                    if (activeUnit.uiController.moveWish)
+                    {
+                        //  make the move cost the cost of the tile
+                        moveCost = north.MoveScore;
+                    }
+                    //  otherwise, if the unit needs to attack or use a skill
+                    else if (activeUnit.uiController.attackWish || activeUnit.uiController.skillWish)
+                    {
+                        //  set the move cost to 1
+                        moveCost = 1;
+                    }
+
                     //  check to see if the north value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(north)
-                        && (north.MoveScore + cur.curScore) <= range
-                        && !north.Occupied && !north.Obstacle)
+                        && (moveCost + cur.curScore) <= range
+                        /*&& !north.Occupied*/ && !north.Obstacle)
                     {
                         //  check if the tile we are looking at is currently in the tilesToTraverse queue
                         if (tilesToTraverse.Contains(north))
                         {
                             //  if so, check if we should overwrite the score
-                            if (north.curScore > north.MoveScore + cur.curScore)
+                            if (north.curScore > moveCost + cur.curScore)
                             {
-                                north.curScore = north.MoveScore + cur.curScore;
+                                north.curScore = moveCost + cur.curScore;
                             }
                         }
                         else
                         {
                             //  update the score of the tile
-                            north.curScore += north.MoveScore + cur.curScore;
+                            north.curScore += moveCost + cur.curScore;
                             //  if so, we can add it to the queue
                             tilesToTraverse.Enqueue(north);
                         }
@@ -197,26 +245,40 @@ public class GridManager : MonoBehaviour
                 //  check to see if the east connection has NOT been visited
                 if (!east.Visited)
                 {
+                    //  if the unit needs to move:
+                    if (activeUnit.uiController.moveWish)
+                    {
+                        //  make the move cost the cost of the tile
+                        moveCost = east.MoveScore;
+                    }
+
+                    //  otherwise, if the unit needs to attack or use a skill
+                    if (activeUnit.uiController.attackWish || activeUnit.uiController.skillWish)
+                    {
+                        //  set the move cost to 1
+                        moveCost = 1;
+                    }
+
                     //  check to see if the east value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(east)
-                        && (east.MoveScore + cur.curScore) <= range
-                        && !east.Occupied && !east.Obstacle)
+                        && (moveCost + cur.curScore) <= range
+                        /*&& !east.Occupied*/ && !east.Obstacle)
                     {
                         //  check if the tile we are looking at is currently in the tilesToTraverse queue
                         if (tilesToTraverse.Contains(east))
                         {
                             //  if so, check if we should overwrite the score
-                            if (east.curScore > east.MoveScore + cur.curScore)
+                            if (east.curScore > moveCost + cur.curScore)
                             {
-                                east.curScore = east.MoveScore + cur.curScore;
+                                east.curScore = moveCost + cur.curScore;
                             }
                         }
                         else
                         {
                             //  update the score of the tile
-                            east.curScore += east.MoveScore + cur.curScore;
+                            east.curScore += moveCost + cur.curScore;
                             //  if so, we can add it to the queue
                             tilesToTraverse.Enqueue(east);
                         }
@@ -230,26 +292,39 @@ public class GridManager : MonoBehaviour
                 //  check to see if the south connection has NOT been visited
                 if (!south.Visited)
                 {
+                    //  if the unit needs to move:
+                    if (activeUnit.uiController.moveWish)
+                    {
+                        //  make the move cost the cost of the tile
+                        moveCost = south.MoveScore;
+                    }
+                    //  otherwise, if the unit needs to attack or use a skill
+                    else if (activeUnit.uiController.attackWish || activeUnit.uiController.skillWish)
+                    {
+                        //  set the move cost to 1
+                        moveCost = 1;
+                    }
+
                     //  check to see if the north value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(south)
-                        && (south.MoveScore + cur.curScore) <= range
-                        && !south.Occupied && !south.Obstacle)
+                        && (moveCost + cur.curScore) <= range
+                        /*&& !south.Occupied*/ && !south.Obstacle)
                     {
                         //  check if the tile we are looking at is currently in the tilesToTraverse queue
                         if (tilesToTraverse.Contains(south))
                         {
                             //  if so, check if we should overwrite the score
-                            if (south.curScore > south.MoveScore + cur.curScore)
+                            if (south.curScore > moveCost + cur.curScore)
                             {
-                                south.curScore = south.MoveScore + cur.curScore;
+                                south.curScore = moveCost + cur.curScore;
                             }
                         }
                         else
                         {
                             //  update the score of the tile
-                            south.curScore += south.MoveScore + cur.curScore;
+                            south.curScore += moveCost + cur.curScore;
                             //  if so, we can add it to the queue
                             tilesToTraverse.Enqueue(south);
                         }
@@ -263,26 +338,39 @@ public class GridManager : MonoBehaviour
                 //  check to see if the west connection has NOT been visited
                 if (!west.Visited)
                 {
+                    //  if the unit needs to move:
+                    if (activeUnit.uiController.moveWish)
+                    {
+                        //  make the move cost the cost of the tile
+                        moveCost = west.MoveScore;
+                    }
+                    //  otherwise, if the unit needs to attack or use a skill
+                    else if (activeUnit.uiController.attackWish || activeUnit.uiController.skillWish)
+                    {
+                        //  set the move cost to 1
+                        moveCost = 1;
+                    }
+
                     //  check to see if the north value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
                     //  check if that tile is NOT occupied or an obstacle
                     if (!accessibleTiles.Contains(west)
-                        && (west.MoveScore + cur.curScore) <= range
-                        && !west.Occupied && !west.Obstacle)
+                        && (moveCost + cur.curScore) <= range
+                        /*&& !west.Occupied*/ && !west.Obstacle)
                     {
                         //  check if the tile we are looking at is currently in the tilesToTraverse queue
                         if (tilesToTraverse.Contains(west))
                         {
                             //  if so, check if we should overwrite the score
-                            if (west.curScore > west.MoveScore + cur.curScore)
+                            if (west.curScore > moveCost + cur.curScore)
                             {
-                                west.curScore = west.MoveScore + cur.curScore;
+                                west.curScore = moveCost + cur.curScore;
                             }
                         }
                         else
                         {
                             //  update the score of the tile
-                            west.curScore += west.MoveScore + cur.curScore;
+                            west.curScore += moveCost + cur.curScore;
                             //  if so, we can add it to the queue
                             tilesToTraverse.Enqueue(west);
                         }
@@ -564,6 +652,7 @@ public class GridManager : MonoBehaviour
             tile.highlight = false;
             tile.prevTile = null;
             tile.rend.color = Color.white;
+            tile.prevColor = Color.white;
         }
     }
 }

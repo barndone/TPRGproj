@@ -48,7 +48,7 @@ public class Tile : MonoBehaviour, IComparer<Tile>
 
     public bool highlight = false;
     private Color mouseoverColor;
-    private Color prevColor;
+    public Color prevColor;
 
     [SerializeField] private int moveScore = 1;
     [SerializeField] public int defaultDistance = 1;

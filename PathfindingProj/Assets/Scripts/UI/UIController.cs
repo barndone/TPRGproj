@@ -119,4 +119,14 @@ public class UIController : MonoBehaviour
         cancelWish = false;
         moveWish = false;
     }
+
+    public void ResetFlags()
+    {
+        attackWish = false;
+        skillWish = false;
+        waitWish = false;
+        cancelWish = false;
+        moveWish = false;
+        endTurnWish = false;
+    }
 }

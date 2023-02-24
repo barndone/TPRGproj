@@ -8,12 +8,17 @@ public class Unit : MonoBehaviour
     //  stores the units position as a row/col index
     [SerializeField] public Vector2 mapPosition;
 
+    //  position of the unit at the start of a turn
+    private Vector2 startOfTurnPos;
+    //  public get/set for startOfTurnPos
+    public Vector2 StartOfTurnPos { get { return startOfTurnPos; } set { startOfTurnPos = value; } }
+
     //  reference to the gridManager script, used for pathfinding
-    [SerializeField] GridManager gridManager;
+    [SerializeField] public GridManager gridManager;
     [SerializeField] public UIController uiController;
 
     //  flag for if the unit is selected
-    [SerializeField] private bool isSelected;
+    [SerializeField] public bool isSelected;
 
     //  reference to the tile this unit currently occupies
     public Tile currentTile;
@@ -39,6 +44,10 @@ public class Unit : MonoBehaviour
     public bool hasAction = false;
 
     private bool acting = false;
+
+    public bool waiting = false;
+
+    public bool selectable = true;
 
     //  attack range of the unit
     [SerializeField] private int atkRange = 1;
@@ -192,11 +201,11 @@ public class Unit : MonoBehaviour
             }
             if (uiController.cancelWish)
             {
-            
+                //  start of turn, store the 
             }
             if (uiController.waitWish)
             {
-            
+                EndOfUnitActions();
             }
 
         }
@@ -204,7 +213,10 @@ public class Unit : MonoBehaviour
         if (hasActed && hasMoved)
         {
             sprite.color = Color.grey;
+            waiting = true;
         }
+        //  otherwise, no color change
+        else { sprite.color = Color.white; }
     }
 
     private void OnMouseEnter()
@@ -279,7 +291,7 @@ public class Unit : MonoBehaviour
     }
 
     //  Used to reset the state of the unit after a unit has taken all available actions
-    private void EndOfUnitActions()
+    public void EndOfUnitActions()
     {
         //  start cleanup
         //  clear path to move
@@ -295,6 +307,9 @@ public class Unit : MonoBehaviour
         //  update the animation to not be selected
         animator.SetBool("selected", isSelected);
 
+        hasActed = true;
+        hasMoved = true;
+
         //  hide the accessible tiles of the unit
         gridManager.HideAccessibleTiles(this, accessibleTiles);
         //  mark that there is no longer an active unit
@@ -302,5 +317,26 @@ public class Unit : MonoBehaviour
         //  clear the accessible tiles of the unit
         accessibleTiles.Clear();
         gridManager.ResetTiles();
+        uiController.ResetFlags();
+        waiting = true;
     }
+
+    public void StartOfTurn()
+    {
+        waiting = false;
+        hasActed = false;
+        hasMoved = false;
+        isSelected = false;
+
+        //  update the animation to not be selected
+        animator.SetBool("selected", isSelected);
+        uiController.unitSelected = isSelected;
+
+        if (gridManager.activeUnit != null)
+        {
+            gridManager.activeUnit = null;
+        }
+
+        uiController.ResetFlags();
+    }    
 }
