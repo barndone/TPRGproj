@@ -9,16 +9,22 @@ public class Tile : MonoBehaviour, IComparer<Tile>
 
     //  private field to mark whether or not the tile is an obstacle
     [SerializeField] private bool obstacle;
-
-    [SerializeField] private GridManager gridManager;
-
-    public GameObject gameObj;
-
     //  public access methods for whether this tile is an obstacle
     public bool Obstacle { get { return obstacle; } set { obstacle = value; } }
 
     //  public access methods for whether this tile is occupied
     public bool Occupied { get { return occupied; } set { occupied = value; } }
+
+    public Unit occupyingUnit;
+
+    //  reference to the gridManager
+    [SerializeField] private GridManager gridManager;
+
+    //  reference to the gameObj this script is attached to
+    public GameObject gameObj;
+
+    //  reference to the renderer for the tile
+    public SpriteRenderer rend;
 
     //  private fields to mark adjacent tiles
     [SerializeField] private Tile north;
@@ -26,47 +32,70 @@ public class Tile : MonoBehaviour, IComparer<Tile>
     [SerializeField] private Tile south;
     [SerializeField] private Tile west;
 
-    //  Methods to check if the tile has a valid adjacent tile in each cardinal direction
-    public bool hasNorth() { return north != null; }
-    public bool hasEast() { return east != null; }
-    public bool hasSouth() { return south != null; }
-    public bool hasWest() { return west != null; }
-
-
     //  public access methods for adjacent tiles
     public Tile North { get { return north; } set { north = value; } }
     public Tile East { get { return east; } set { east = value; } }
     public Tile South { get { return south; } set { south = value; } }
     public Tile West { get { return west; } set { west = value; } }
 
+    //  Methods to check if the tile has a valid adjacent tile in each cardinal direction
+    public bool hasNorth() { return north != null; }
+    public bool hasEast() { return east != null; }
+    public bool hasSouth() { return south != null; }
+    public bool hasWest() { return west != null; }
+
+    //  index location in map space 
     [SerializeField] private Vector2 mapPos;
     public Vector2 MapPos { get { return mapPos; } set { mapPos = value; } }
 
-    //  reference to the renderer for the tile
-    public SpriteRenderer rend;
-    //  reference to the color of the highlighted sprite
-
-    public bool highlight = false;
-    private Color mouseoverColor;
-    public Color prevColor;
-
+    //  the movement cost of this tile
     [SerializeField] private int moveScore = 1;
+    //  used for test purposes (swapping tiles from ground to water)
     [SerializeField] public int defaultDistance = 1;
 
-    public int curScore = 0;
-    public Tile prevTile = null;
-
+    //  public accesser for the moveScore
     public int MoveScore { get { return moveScore; } set { moveScore = value; } }
+    //  public accesser for the default distance
     public int DefaultDistance { get { return defaultDistance; } }
 
+    //  the current score of the tile (used for pathfinding)
+    public int curScore = 0;
+    //  reference to the previous tile (used for pathfinding)
+    public Tile prevTile = null;
+
+    //  flag for if this tile has been visited by the pathfinding algorithm 
     [SerializeField] private bool visited;
     public bool Visited { get { return visited; } set { visited = value; } }
+
+    //  internal flags for changing the highlight color of the tile
+    //  can the unit reach this tile by movement?
+    public bool moveRange = false;
+    //  can the unit reach this tile by action?
+    public bool actionRange = false;
+
+    //  Both can be true, tiles will be BLUE if moveRange is true
+    //  tiles will be RED if moveRange is false AND actionRange is true
+
+    public Color moveRangeColor = Color.blue;
+    public Color actionRangeColor = Color.red;
+    public Color defaultColor = Color.white;
+
+    //  should this tile be highlighted?
+    public bool highlight = false;
+    //  reference to the mouseover color (initialized in start)
+    private Color mouseoverColor;
+    //  reference to the color of the tile before being highlighted
+    public Color prevColor;
+
 
 
     void Start()
     {
+        //  if the gridManager is not assigned, find it
         gridManager = GetComponentInParent<GridManager>();
+        //  get access to the renderer
         rend = GetComponent<SpriteRenderer>();
+        //  initialize the mouseover color
         ColorUtility.TryParseHtmlString("#F3ED8B", out mouseoverColor);
     }
 
@@ -77,30 +106,39 @@ public class Tile : MonoBehaviour, IComparer<Tile>
         return a.moveScore.CompareTo(b.moveScore);
     }
 
+    //  on the mouse entering the collider of the tile:
     void OnMouseEnter()
     {
+        //  cache the previous color
         prevColor = rend.color;
+        //  change the mouseover color
         rend.color = mouseoverColor;
     }
 
+    //  on the mouse exiting the collider of the tile
     void OnMouseExit()
     {
+        //  change the tile to the previous color
         rend.color = prevColor;
     }
 
+    //  while the mouse is over the collider for the tile:
     private void OnMouseOver()
     {
+        //  if left mouse button is pressed:
         if (Input.GetMouseButtonDown(0))
         {
             //  is there an active unit?
             if (gridManager.activeUnit != null)
             {
+                //  if so cache that unit
                 Unit activeUnit = gridManager.activeUnit;
 
                 //  if so: check if this tile is accessible to the unit
                 if (activeUnit.ValidTile(mapPos))
                 {
                     //  Logic for moving
+                    //  can the unit move? is there a move wish?
                     if (!activeUnit.hasMoved && activeUnit.uiController.moveWish)
                     {
                         Debug.Log("Path from: " + activeUnit.mapPosition + " to: " + CoordinateUtils.IsoWorldToDictionaryKey(this.transform.position));
@@ -110,7 +148,6 @@ public class Tile : MonoBehaviour, IComparer<Tile>
                         //  mark that the active unit has a path
                         activeUnit.hasPath = gridManager.CalculatePath(activeUnit.mapPosition, mapPos, out path);
 
-
                         //  check if the active unit actually has a path (just in case)
                         if (activeUnit.hasPath)
                         {
@@ -118,16 +155,33 @@ public class Tile : MonoBehaviour, IComparer<Tile>
                             activeUnit.pathToMove = path;
                         }
                     }
-                    //  otherwise they are acting
+                    //  otherwise they should act
                     else
                     {
-                        activeUnit.hasAction = true;
+                        //  check if the unit would like to attack
+                        if (activeUnit.uiController.attackWish)
+                        {
+                            activeUnit.hasAction = true;
+                            activeUnit.Attacking(gridManager.map[mapPos]);
+
+                        }
+
+                        //  check if the unit would like to use their skill
+                        if (activeUnit.uiController.skillWish)
+                        {
+                            activeUnit.hasAction = true;
+                            activeUnit.Skill(gridManager.map[mapPos]);
+
+                        }
                     }
                 }
             }
         }
+
+        //  if right mouse button is pressed:
         if (Input.GetMouseButtonDown(1))
         {
+            //  cycle between ground/water states for the clicked tile
             FindObjectOfType<GridManager>().UpdateTile(this.transform.position);
         }
     }

@@ -159,32 +159,38 @@ public class GridManager : MonoBehaviour
         //  current tiles moved in relation to MaxMove
         //  list of accessible tiles (closed)
         accessibleTiles = new List<Tile>();
+
         //  queue for containing the valid tiles within range of this unit
         Queue<Tile> tilesToTraverse = new Queue<Tile>();
 
         //  push the current tile to the front of the queue to begin iteration
         tilesToTraverse.Enqueue(movingUnit.currentTile);
 
+
         //  variable for tracking how far the unit can move, attack, or use their skill
         int range = 0;
         //  separate variable for move cost to account for differences between movement and attacking/skills
         int moveCost = 0;
 
-        //  if the unit has NOT moved
-        if (!movingUnit.hasMoved && movingUnit.uiController.moveWish)
+        //  if the unit has not moved:
+        if (!movingUnit.hasMoved)
         {
-            range = movingUnit.MaxMove;
+            //  add the movement range to the accessibleTiles range
+            range += movingUnit.MaxMove;
         }
-        //  if they have moved then they must need to act
-        //  range for attacking
-        else if (!movingUnit.hasActed && movingUnit.uiController.attackWish)
+
+        //  if the unit has not acted
+        if (!movingUnit.hasActed)
         {
+            //  add the attack range to the accessibleTiles range
+            range += movingUnit.AttackRange;
+        }
+
+        //  check if there is a specific attack/skill wish
+        if (!movingUnit.hasActed && (movingUnit.uiController.attackWish || movingUnit.uiController.skillWish))
+        {
+            //  assign the range to JUST the attack range
             range = movingUnit.AttackRange;
-        }
-        //  range for using skills
-        else if (!movingUnit.hasActed && movingUnit.uiController.skillWish)
-        {
-            range = movingUnit.SkillRange;
         }
 
         do
@@ -199,14 +205,14 @@ public class GridManager : MonoBehaviour
                 //  check to see if the north connection has NOT been visited
                 if (!north.Visited)
                 {
-                    //  if the unit needs to move:
-                    if (activeUnit.uiController.moveWish)
+                    //  if the current score is less than the moveRange of the unit
+                    if (cur.curScore < movingUnit.MaxMove)
                     {
                         //  make the move cost the cost of the tile
                         moveCost = north.MoveScore;
                     }
-                    //  otherwise, if the unit needs to attack or use a skill
-                    else if (activeUnit.uiController.attackWish || activeUnit.uiController.skillWish)
+                    //  otherwise, ignore the cost of the tile (default to one)
+                    else if (cur.curScore >= movingUnit.MaxMove)
                     {
                         //  set the move cost to 1
                         moveCost = 1;
@@ -214,10 +220,12 @@ public class GridManager : MonoBehaviour
 
                     //  check to see if the north value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
-                    //  check if that tile is NOT occupied or an obstacle
+                    //  check if that tile is NOT an obstacle
+
                     if (!accessibleTiles.Contains(north)
                         && (moveCost + cur.curScore) <= range
-                        /*&& !north.Occupied*/ && !north.Obstacle)
+                        && !north.Obstacle
+                        && !north.Occupied)
                     {
                         //  check if the tile we are looking at is currently in the tilesToTraverse queue
                         if (tilesToTraverse.Contains(north))
@@ -232,9 +240,53 @@ public class GridManager : MonoBehaviour
                         {
                             //  update the score of the tile
                             north.curScore += moveCost + cur.curScore;
+
+                            //  update flags of the tile
+                            //  if the curScore of the checked tile is less than or equal to the units movement range
+                            //  AND the tile is not occupied:
+                            if (north.curScore <= movingUnit.MaxMove)
+                            {
+                                //  if the unit hasn't moved
+                                if (!movingUnit.hasMoved && !north.Occupied)
+                                {
+                                    //  mark the tile as within movement range
+                                    north.moveRange = true;
+                                }
+
+                                //  if the unit hasn't acted
+                                if (!movingUnit.hasActed)
+                                {
+                                    //  since it is within movement range it is also within attack range
+                                    north.actionRange = true;
+                                }
+
+                                //  check if the player wants to attack or use their skill
+                                if (movingUnit.uiController.attackWish || movingUnit.uiController.skillWish)
+                                {
+                                    //  reset moveRange flag
+                                    north.moveRange = false;
+                                }
+                            }
+
+                            //  if the curScore of the checked tile is GREATER THAN the units movement range:
+                            else if (north.curScore > movingUnit.MaxMove)
+                            {
+                                //  then it is only within action range
+                                north.actionRange = true;
+                            }
+
                             //  if so, we can add it to the queue
                             tilesToTraverse.Enqueue(north);
                         }
+                    }
+                    if (!accessibleTiles.Contains(north)
+                        && (moveCost + cur.curScore) <= range
+                        && !north.Obstacle
+                        && north.Occupied)
+                    {
+                        north.moveRange = false;
+                        north.actionRange = true;
+                        accessibleTiles.Add(north);
                     }
                 }
             }
@@ -245,26 +297,27 @@ public class GridManager : MonoBehaviour
                 //  check to see if the east connection has NOT been visited
                 if (!east.Visited)
                 {
-                    //  if the unit needs to move:
-                    if (activeUnit.uiController.moveWish)
+                    //  if the current score is less than the moveRange of the unit
+                    if (cur.curScore < movingUnit.MaxMove)
                     {
                         //  make the move cost the cost of the tile
                         moveCost = east.MoveScore;
                     }
-
-                    //  otherwise, if the unit needs to attack or use a skill
-                    if (activeUnit.uiController.attackWish || activeUnit.uiController.skillWish)
+                    //  otherwise, ignore the cost of the tile (default to one)
+                    else if (cur.curScore >= movingUnit.MaxMove)
                     {
                         //  set the move cost to 1
                         moveCost = 1;
                     }
 
-                    //  check to see if the east value is contained in the CLOSED list
+                    //  check to see if the north value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
-                    //  check if that tile is NOT occupied or an obstacle
+                    //  check if that tile is NOT an obstacle
+
                     if (!accessibleTiles.Contains(east)
                         && (moveCost + cur.curScore) <= range
-                        /*&& !east.Occupied*/ && !east.Obstacle)
+                        && !east.Obstacle
+                        && !east.Occupied)
                     {
                         //  check if the tile we are looking at is currently in the tilesToTraverse queue
                         if (tilesToTraverse.Contains(east))
@@ -279,9 +332,53 @@ public class GridManager : MonoBehaviour
                         {
                             //  update the score of the tile
                             east.curScore += moveCost + cur.curScore;
+
+                            //  update flags of the tile
+                            //  if the curScore of the checked tile is less than or equal to the units movement range
+                            //  AND the tile is not occupied:
+                            if (east.curScore <= movingUnit.MaxMove)
+                            {
+                                //  if the unit hasn't moved
+                                if (!movingUnit.hasMoved && !east.Occupied)
+                                {
+                                    //  mark the tile as within movement range
+                                    east.moveRange = true;
+                                }
+
+                                //  if the unit hasn't acted
+                                if (!movingUnit.hasActed)
+                                {
+                                    //  since it is within movement range it is also within attack range
+                                    east.actionRange = true;
+                                }
+                            }
+
+                            //  if the curScore of the checked tile is GREATER THAN the units movement range:
+                            else if (east.curScore > movingUnit.MaxMove)
+                            {
+                                //  then it is only within action range
+                                east.actionRange = true;
+                            }
+
+                            //  check if the player wants to attack or use their skill
+                            if (movingUnit.uiController.attackWish || movingUnit.uiController.skillWish)
+                            {
+                                //  reset moveRange flag
+                                east.moveRange = false;
+                            }
+
                             //  if so, we can add it to the queue
                             tilesToTraverse.Enqueue(east);
                         }
+                    }
+                    if (!accessibleTiles.Contains(east)
+                        && (moveCost + cur.curScore) <= range
+                        && !east.Obstacle
+                        && east.Occupied)
+                    {
+                        east.moveRange = false;
+                        east.actionRange = true;
+                        accessibleTiles.Add(east);
                     }
                 }
             }
@@ -292,14 +389,14 @@ public class GridManager : MonoBehaviour
                 //  check to see if the south connection has NOT been visited
                 if (!south.Visited)
                 {
-                    //  if the unit needs to move:
-                    if (activeUnit.uiController.moveWish)
+                    //  if the current score is less than the moveRange of the unit
+                    if (cur.curScore < movingUnit.MaxMove)
                     {
                         //  make the move cost the cost of the tile
                         moveCost = south.MoveScore;
                     }
-                    //  otherwise, if the unit needs to attack or use a skill
-                    else if (activeUnit.uiController.attackWish || activeUnit.uiController.skillWish)
+                    //  otherwise, ignore the cost of the tile (default to one)
+                    else if (cur.curScore >= movingUnit.MaxMove)
                     {
                         //  set the move cost to 1
                         moveCost = 1;
@@ -307,10 +404,12 @@ public class GridManager : MonoBehaviour
 
                     //  check to see if the north value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
-                    //  check if that tile is NOT occupied or an obstacle
+                    //  check if that tile is NOT an obstacle
+
                     if (!accessibleTiles.Contains(south)
                         && (moveCost + cur.curScore) <= range
-                        /*&& !south.Occupied*/ && !south.Obstacle)
+                        && !south.Obstacle
+                        && !south.Occupied)
                     {
                         //  check if the tile we are looking at is currently in the tilesToTraverse queue
                         if (tilesToTraverse.Contains(south))
@@ -325,9 +424,53 @@ public class GridManager : MonoBehaviour
                         {
                             //  update the score of the tile
                             south.curScore += moveCost + cur.curScore;
+
+                            //  update flags of the tile
+                            //  if the curScore of the checked tile is less than or equal to the units movement range
+                            //  AND the tile is not occupied:
+                            if (south.curScore <= movingUnit.MaxMove)
+                            {
+                                //  if the unit hasn't moved
+                                if (!movingUnit.hasMoved && !south.Occupied)
+                                {
+                                    //  mark the tile as within movement range
+                                    south.moveRange = true;
+                                }
+
+                                //  if the unit hasn't acted
+                                if (!movingUnit.hasActed)
+                                {
+                                    //  since it is within movement range it is also within attack range
+                                    south.actionRange = true;
+                                }
+                            }
+
+                            //  if the curScore of the checked tile is GREATER THAN the units movement range:
+                            else if (south.curScore > movingUnit.MaxMove)
+                            {
+                                //  then it is only within action range
+                                south.actionRange = true;
+                            }
+
+                            //  check if the player wants to attack or use their skill
+                            if (movingUnit.uiController.attackWish || movingUnit.uiController.skillWish)
+                            {
+                                //  reset moveRange flag
+                                south.moveRange = false;
+                            }
+
                             //  if so, we can add it to the queue
                             tilesToTraverse.Enqueue(south);
                         }
+                    }
+                    if (!accessibleTiles.Contains(south)
+                        && (moveCost + cur.curScore) <= range
+                        && !south.Obstacle
+                        && south.Occupied)
+                    {
+                        south.moveRange = false;
+                        south.actionRange = true;
+                        accessibleTiles.Add(south);
                     }
                 }
             }
@@ -338,14 +481,14 @@ public class GridManager : MonoBehaviour
                 //  check to see if the west connection has NOT been visited
                 if (!west.Visited)
                 {
-                    //  if the unit needs to move:
-                    if (activeUnit.uiController.moveWish)
+                    //  if the current score is less than the moveRange of the unit
+                    if (cur.curScore < movingUnit.MaxMove)
                     {
                         //  make the move cost the cost of the tile
                         moveCost = west.MoveScore;
                     }
-                    //  otherwise, if the unit needs to attack or use a skill
-                    else if (activeUnit.uiController.attackWish || activeUnit.uiController.skillWish)
+                    //  otherwise, ignore the cost of the tile (default to one)
+                    else if (cur.curScore >= movingUnit.MaxMove)
                     {
                         //  set the move cost to 1
                         moveCost = 1;
@@ -353,10 +496,12 @@ public class GridManager : MonoBehaviour
 
                     //  check to see if the north value is contained in the CLOSED list
                     //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
-                    //  check if that tile is NOT occupied or an obstacle
+                    //  check if that tile is NOT an obstacle
+
                     if (!accessibleTiles.Contains(west)
                         && (moveCost + cur.curScore) <= range
-                        /*&& !west.Occupied*/ && !west.Obstacle)
+                        && !west.Obstacle
+                        && !west.Occupied)
                     {
                         //  check if the tile we are looking at is currently in the tilesToTraverse queue
                         if (tilesToTraverse.Contains(west))
@@ -371,12 +516,57 @@ public class GridManager : MonoBehaviour
                         {
                             //  update the score of the tile
                             west.curScore += moveCost + cur.curScore;
+
+                            //  update flags of the tile
+                            //  if the curScore of the checked tile is less than or equal to the units movement range
+                            //  AND the tile is not occupied:
+                            if (west.curScore <= movingUnit.MaxMove)
+                            {
+                                //  if the unit hasn't moved
+                                if (!movingUnit.hasMoved)
+                                {
+                                    //  mark the tile as within movement range
+                                    west.moveRange = true;
+                                }
+
+                                //  if the unit hasn't acted
+                                if (!movingUnit.hasActed)
+                                {
+                                    //  since it is within movement range it is also within attack range
+                                    west.actionRange = true;
+                                }
+                            }
+
+                            //  if the curScore of the checked tile is GREATER THAN the units movement range:
+                            else if (west.curScore > movingUnit.MaxMove)
+                            {
+                                //  then it is only within action range
+                                west.actionRange = true;
+                            }
+
+                            //  check if the player wants to attack or use their skill
+                            if (movingUnit.uiController.attackWish || movingUnit.uiController.skillWish)
+                            {
+                                //  reset moveRange flag
+                                west.moveRange = false;
+                            }
+
                             //  if so, we can add it to the queue
                             tilesToTraverse.Enqueue(west);
                         }
                     }
+                    if (!accessibleTiles.Contains(west)
+                        && (moveCost + cur.curScore) <= range
+                        && !west.Obstacle
+                        && west.Occupied)
+                    {
+                        west.moveRange = false;
+                        west.actionRange = true;
+                        accessibleTiles.Add(west);
+                    }
                 }
             }
+
             //  assign the current tile as visited
             cur.Visited = true;
             //  pop from the front of the queue and add it to the output list
@@ -384,36 +574,43 @@ public class GridManager : MonoBehaviour
             //  break the loop if the open list is empty!
         } while (tilesToTraverse.Count != 0);
 
-        //  if the unit has not moved:
-        if (!movingUnit.hasMoved && movingUnit.uiController.moveWish)
+
+        //  after gathering the accessible tile:
+        //  iterate through each accessible tile
+        foreach (Tile tile in accessibleTiles)
         {
-            //  mark all of the accessible tiles magenta to show movement range
-            HighlightTiles(accessibleTiles, Color.magenta);
-        }
-        //  if they have not acted:
-        else if (!movingUnit.hasActed && (movingUnit.uiController.attackWish || movingUnit.uiController.skillWish))
-        {
-            HighlightTiles(accessibleTiles, Color.red);
+            tile.Visited = false;
+            tile.curScore = 0;
+
+            //  if that tile lies within the moveRange of the unit:
+            if (tile.moveRange)
+            {
+                //  change the color of the tile to the moveRangeColor (default to blue)
+                tile.rend.color = tile.moveRangeColor;
+            }
+            //  otherwise, if moveRange is false and this tile lies within action range:
+            else if (!tile.moveRange && tile.actionRange)
+            {
+                //  change the color of the tile to the actionRangeColor (default to red)
+                tile.rend.color = tile.actionRangeColor;
+            }
         }
     }
 
     //  Method for hiding which tiles on the grid a unit is able to access
     public void HideAccessibleTiles(Unit movingUnit, List<Tile> accessibleTiles)
     {
-        HighlightTiles(accessibleTiles, Color.white);
-    }
-
-    //  highlight the given list of Tiles
-    public void HighlightTiles(List<Tile> tiles, Color color)
-    {
         //  for each tile in the list tiles:
-        foreach (Tile tile in tiles)
+        foreach (Tile tile in accessibleTiles)
         {
-            tile.rend.color = color;
+            tile.rend.color = tile.defaultColor;
             tile.Visited = false;
             tile.curScore = 0;
+            tile.moveRange = false;
+            tile.actionRange = false;
         }
     }
+
 
     //  given a starting point, an endpoint, and a list to output as the path, traverse to the destination point
     public bool CalculatePath(Vector2 startPos, Vector2 destPos, out List<Vector2> path)
@@ -644,15 +841,22 @@ public class GridManager : MonoBehaviour
         //  iterate through each tile on the map and reset the flags from Dijkstra algo
         foreach (Tile tile in map.Values)
         {
+            //  reset flags for move/action range
+            tile.moveRange = false;
+            tile.actionRange = false;
+
             //  mark each tile as not visited
             tile.Visited = false;
             //  reset the current score
             tile.curScore = 0;
+
             //  remove the highlight
             tile.highlight = false;
+            //  set previous tile to null
             tile.prevTile = null;
-            tile.rend.color = Color.white;
-            tile.prevColor = Color.white;
+            //  reset the color to white
+            tile.rend.color = tile.defaultColor;
+            tile.prevColor = tile.defaultColor;
         }
     }
 }
