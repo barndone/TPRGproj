@@ -306,7 +306,7 @@ public class Unit : MonoBehaviour
                             //  pass that this is the active unit to the grid manager
                             gridManager.activeUnit = this;
                             uiController.unitSelected = isSelected;
-                            gridManager.ShowAccessibleTiles(this, out accessibleTiles);
+                            //gridManager.ShowAccessibleTiles(this, out accessibleTiles);
                         }
                         //  otherwise, they were unselected
                         else
@@ -349,7 +349,7 @@ public class Unit : MonoBehaviour
                             //  pass that this is the active unit to the grid manager
                             gridManager.activeUnit = this;
                             uiController.unitSelected = isSelected;
-                            gridManager.ShowAccessibleTiles(this, out accessibleTiles);
+                            //gridManager.ShowAccessibleTiles(this, out accessibleTiles);
                         }
                         //  otherwise, they were unselected
                         else
