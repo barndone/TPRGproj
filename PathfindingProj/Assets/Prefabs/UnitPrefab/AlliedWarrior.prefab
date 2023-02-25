@@ -193,7 +193,7 @@ MonoBehaviour:
   skillRange: 1
   maxMove: 3
   timeToWait: 0.5
-  ally: 0
+  ally: 1
   curHealth: 10
   maxHealth: 10
   attack: 2
