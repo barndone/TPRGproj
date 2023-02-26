@@ -10,7 +10,6 @@ public class MainMenu : MonoBehaviour
     [SerializeField] AudioClip buttonSound;
 
     [SerializeField] AudioSource audioSource;
-    [SerializeField] AudioClip menuMusic;
     [SerializeField] AudioClip menuMusicEnd;
 
     private bool shouldExit = false;
@@ -47,8 +46,6 @@ public class MainMenu : MonoBehaviour
 
             shouldExit = false;
             SceneManager.LoadScene(sceneIndex);
-            
-
         }
     }
 

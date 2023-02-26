@@ -6,8 +6,6 @@ public class UIController : MonoBehaviour
 {
     //  List of all buttons for controlling a unit
     [SerializeField] List<GameObject> unitButtons = new List<GameObject>();
-    //  List of all other buttons
-    [SerializeField] List<GameObject> optionButtons = new List<GameObject>();
 
     //  flag for if a unit is selected
     //  if true -> show unitButtons

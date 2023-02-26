@@ -4,40 +4,6 @@ using UnityEngine;
 
 public class Warrior : Unit
 {
-    //  implementation for the warriors attack
-    public override void Attacking(Tile targetTile)
-    {
-        //  check if it is a valid tile to attack
-        if (ValidTile(targetTile.MapPos))
-        {
-            //  does that tile actually have a unit on it?
-            if (targetTile.occupyingUnit != null)
-            {
-                Unit other = targetTile.occupyingUnit;
-
-                //  check if that unit is an enemy
-                if (this.ally != other.ally)
-                {
-                    //  time to attack!
-                    other.CurHealth -= (this.Attack - other.Defence);
-                }
-                else
-                {
-                    this.hasAction = false;
-                    this.hasActed = false;
-                    Debug.Log("Target tile occupied by ally");
-                }
-            }
-
-            else
-            {
-                this.hasAction = false;
-                this.hasActed = false;
-                Debug.Log("Target tile empty");
-            }
-        }
-    }
-
     //  implementation for the warriors skill
     public override void Skill(Tile targetTile)
     {

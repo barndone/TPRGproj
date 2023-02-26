@@ -14,8 +14,6 @@ public class TurnManager : MonoBehaviour
     //  reference to the computer controller (stores each unit the computer has contorl over)
     [SerializeField] private ComputerController cpu;
 
-
-
     private void TurnStart()
     {
         //  if it is the players turn

@@ -4,8 +4,10 @@ ScriptsOnlyBuild:
     - ComputerController
     - GridManager
     - MainMenu
+    - PartySelectionMenu
     - PlayerController
     - Tile
+    - Tooltip
     - TurnManager
     - UIController
     - Warrior
@@ -26,11 +28,19 @@ ScriptsOnlyBuild:
     - UnityEditor.Tilemaps.TilemapPrefabStageHelper
     Unity.Rider.Editor.dll:
     - Packages.Rider.Editor.UnitTesting.CallbackData
+    Unity.TextMeshPro.dll:
+    - TMPro.TMP_FontAsset
+    - TMPro.TMP_Settings
+    - TMPro.TMP_SpriteAsset
+    - TMPro.TMP_StyleSheet
+    - TMPro.TextMeshProUGUI
     UnityEditor.Graphs.dll:
     - UnityEditor.Graphs.AnimationBlendTree.Graph
     - UnityEditor.Graphs.AnimationBlendTree.GraphGUI
+    - UnityEditor.Graphs.AnimationStateMachine.AnyStateNode
     - UnityEditor.Graphs.AnimationStateMachine.Graph
     - UnityEditor.Graphs.AnimationStateMachine.GraphGUI
+    - UnityEditor.Graphs.AnimationStateMachine.StateNode
     - UnityEditor.Graphs.AnimatorControllerTool
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
@@ -73,33 +83,39 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1444}
+      Script: {instanceID: 1518}
     - Class: 114
-      Script: {instanceID: 1488}
+      Script: {instanceID: 1562}
     - Class: 114
-      Script: {instanceID: 1550}
+      Script: {instanceID: 1624}
     - Class: 114
-      Script: {instanceID: 2076}
+      Script: {instanceID: 1834}
     - Class: 114
-      Script: {instanceID: 2448}
+      Script: {instanceID: 2150}
     - Class: 114
-      Script: {instanceID: 2594}
+      Script: {instanceID: 2522}
     - Class: 114
-      Script: {instanceID: 2764}
+      Script: {instanceID: 2668}
     - Class: 114
-      Script: {instanceID: 2974}
+      Script: {instanceID: 2710}
     - Class: 114
-      Script: {instanceID: 3076}
+      Script: {instanceID: 2838}
     - Class: 114
-      Script: {instanceID: 3626}
+      Script: {instanceID: 3048}
     - Class: 114
-      Script: {instanceID: 3966}
+      Script: {instanceID: 3150}
     - Class: 114
-      Script: {instanceID: 4682}
+      Script: {instanceID: 3700}
     - Class: 114
-      Script: {instanceID: 4848}
+      Script: {instanceID: 4040}
     - Class: 114
-      Script: {instanceID: 5016}
+      Script: {instanceID: 4758}
+    - Class: 114
+      Script: {instanceID: 4924}
+    - Class: 114
+      Script: {instanceID: 5092}
+    - Class: 114
+      Script: {instanceID: 21454}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -131,6 +147,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 48
       Script: {instanceID: 0}
+    - Class: 49
+      Script: {instanceID: 0}
     - Class: 81
       Script: {instanceID: 0}
     - Class: 82
@@ -140,21 +158,29 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1488}
+      Script: {instanceID: 1562}
     - Class: 114
-      Script: {instanceID: 2076}
+      Script: {instanceID: 1834}
     - Class: 114
-      Script: {instanceID: 2448}
+      Script: {instanceID: 2142}
     - Class: 114
-      Script: {instanceID: 2594}
+      Script: {instanceID: 2150}
     - Class: 114
-      Script: {instanceID: 2764}
+      Script: {instanceID: 2522}
     - Class: 114
-      Script: {instanceID: 2974}
+      Script: {instanceID: 2668}
     - Class: 114
-      Script: {instanceID: 3076}
+      Script: {instanceID: 2838}
     - Class: 114
-      Script: {instanceID: 16748}
+      Script: {instanceID: 3048}
+    - Class: 114
+      Script: {instanceID: 3150}
+    - Class: 114
+      Script: {instanceID: 4292}
+    - Class: 114
+      Script: {instanceID: 4514}
+    - Class: 114
+      Script: {instanceID: 4624}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -164,6 +190,59 @@ ScriptsOnlyBuild:
     - Class: 196
       Script: {instanceID: 0}
     - Class: 212
+      Script: {instanceID: 0}
+    - Class: 213
+      Script: {instanceID: 0}
+    - Class: 222
+      Script: {instanceID: 0}
+    - Class: 223
+      Script: {instanceID: 0}
+    - Class: 224
+      Script: {instanceID: 0}
+    Assets/Scenes/PartySelection.unity:
+    - Class: 1
+      Script: {instanceID: 0}
+    - Class: 4
+      Script: {instanceID: 0}
+    - Class: 20
+      Script: {instanceID: 0}
+    - Class: 21
+      Script: {instanceID: 0}
+    - Class: 28
+      Script: {instanceID: 0}
+    - Class: 48
+      Script: {instanceID: 0}
+    - Class: 81
+      Script: {instanceID: 0}
+    - Class: 82
+      Script: {instanceID: 0}
+    - Class: 83
+      Script: {instanceID: 0}
+    - Class: 104
+      Script: {instanceID: 0}
+    - Class: 114
+      Script: {instanceID: 1562}
+    - Class: 114
+      Script: {instanceID: 2150}
+    - Class: 114
+      Script: {instanceID: 2522}
+    - Class: 114
+      Script: {instanceID: 2668}
+    - Class: 114
+      Script: {instanceID: 2838}
+    - Class: 114
+      Script: {instanceID: 3048}
+    - Class: 114
+      Script: {instanceID: 3150}
+    - Class: 114
+      Script: {instanceID: 29814}
+    - Class: 115
+      Script: {instanceID: 0}
+    - Class: 128
+      Script: {instanceID: 0}
+    - Class: 157
+      Script: {instanceID: 0}
+    - Class: 196
       Script: {instanceID: 0}
     - Class: 213
       Script: {instanceID: 0}
@@ -686,6 +765,12 @@ ScriptsOnlyBuild:
     className: TMP_SubMeshUI
   - hash:
       serializedVersion: 2
+      Hash: 1059f0a289b557ab7b93e7f0dbcfa157
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: MainMenu
+  - hash:
+      serializedVersion: 2
       Hash: 47556c05344f3058a162f04701f8ce48
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
@@ -746,18 +831,31 @@ ScriptsOnlyBuild:
     className: FabrikSolver2D
   - hash:
       serializedVersion: 2
-      Hash: 51a15226bc67e88c1346f3ca7e1ec9ff
+      Hash: 6ea5700dcda465f34dbc6d2158c6921c
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: UIController
   - hash:
       serializedVersion: 2
-      Hash: fe9e8a734a93366b9bee043b3f49717d
+      Hash: e3c6db95beed1d4cd99d3fef83dcdc12
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
-    className: MainMenu
+    className: Tooltip
+  - hash:
+      serializedVersion: 2
+      Hash: b94e1a95a8af0bbd8151037eeb080248
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: PartySelectionMenu
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: SaveSystem
   platform: 5
   scenePathNames:
   - Assets/Scenes/Menu.unity
+  - Assets/Scenes/PartySelection.unity
   - Assets/Scenes/BattleScreen.unity
-  playerPath: C:/Users/s229029/source/repos/TRPGproj/PathfindingProj/Builds/PathfindingProj.exe
+  playerPath: D:/AIE Work/repos/TPRGproj/PathfindingProj/Builds/PathfindingProj.exe

@@ -99,8 +99,11 @@ public class Unit : MonoBehaviour
 
     void Start()
     {
-        //  returns the turnManager in the scene
+        //  assign the turn manager, grid manager, and UI controller
         turnManager = FindObjectOfType<TurnManager>();
+        gridManager = FindObjectOfType<GridManager>();
+        uiController = FindObjectOfType<UIController>();
+
         //  assign the current tile
         currentTile = gridManager.map[mapPosition];
         transform.position = currentTile.transform.position;
@@ -430,7 +433,38 @@ public class Unit : MonoBehaviour
     }
 
     //  functionality for attacking
-    public virtual void Attacking(Tile targetTile) { /* Intentionally left blank - to be implemented in derived classes */ }
+    public void Attacking(Tile targetTile) 
+    {
+        //  check if it is a valid tile to attack
+        if (ValidTile(targetTile.MapPos))
+        {
+            //  does that tile actually have a unit on it?
+            if (targetTile.occupyingUnit != null)
+            {
+                Unit other = targetTile.occupyingUnit;
+
+                //  check if that unit is an enemy
+                if (this.ally != other.ally)
+                {
+                    //  time to attack!
+                    other.CurHealth -= (this.Attack - other.Defence);
+                }
+                else
+                {
+                    this.hasAction = false;
+                    this.hasActed = false;
+                    Debug.Log("Target tile occupied by ally");
+                }
+            }
+
+            else
+            {
+                this.hasAction = false;
+                this.hasActed = false;
+                Debug.Log("Target tile empty");
+            }
+        }
+    }
     //  functionality for their skill
     public virtual void Skill(Tile targetTile) { /* Intentionally left blank - to be implemented in derived classes */ }
 }
