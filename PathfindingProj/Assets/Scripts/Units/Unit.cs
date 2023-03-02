@@ -272,6 +272,7 @@ public class Unit : MonoBehaviour
         //  on mouse entering the collider of this unit:
         //  begin highlighted animation
         animator.SetBool("highlighted", true);
+        MOTooltip();
     }
 
     protected void OnMouseExit()
@@ -279,6 +280,7 @@ public class Unit : MonoBehaviour
         //  on mouse exiting the collider of this unit:
         //  stop the highlighted animation
         animator.SetBool("highlighted", false);
+        Tooltip.HideTooltip_Static();
     }
 
     protected void OnMouseOver()
@@ -467,4 +469,6 @@ public class Unit : MonoBehaviour
     }
     //  functionality for their skill
     public virtual void Skill(Tile targetTile) { /* Intentionally left blank - to be implemented in derived classes */ }
+
+    public virtual void MOTooltip() { /* intentionally left blank - to be implemented in derived classes */ }
 }

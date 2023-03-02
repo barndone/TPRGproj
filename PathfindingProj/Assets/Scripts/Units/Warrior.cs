@@ -82,4 +82,10 @@ public class Warrior : Unit
             }
         }
     }
+
+    //  implementation for the mouseover tooltip of a warrior
+    public override void MOTooltip()
+    {
+        Tooltip.ShowTooltip_Static("Warrior\nFront-line melee unit with the ability to shove other units away.");
+    }
 }
