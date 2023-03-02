@@ -177,12 +177,14 @@ MonoBehaviour:
   gridManager: {fileID: 0}
   uiController: {fileID: 0}
   turnManager: {fileID: 0}
+  partyManager: {fileID: 0}
   isSelected: 0
   currentTile: {fileID: 0}
   animator: {fileID: 6282762469812278470}
   accessibleTiles: []
   pathToMove: []
   sprite: {fileID: 6282762469812278468}
+  deadSprite: {fileID: -4582171896946982042, guid: aa0275af32bb1d3408b227f0e436e256, type: 3}
   hasPath: 0
   hasMoved: 0
   hasActed: 0

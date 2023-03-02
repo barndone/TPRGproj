@@ -22,4 +22,15 @@ public static class CoordinateUtils
         return new Vector2(Mathf.Abs(2 * pos.y + pos.x), Mathf.Abs(2 * pos.y - pos.x));
     }
 
+    //  calcuate an H score using the Manhattan Distance Heuristic
+    //  h = AbsVal(cur.x - dest.x) + AbsVal(cur.y - dest.y)
+    public static int CalcManhattanDistance(Vector2 curPos, Vector2 destPos)
+    {
+        return (int)(Mathf.Abs(curPos.x - destPos.x) + Mathf.Abs(curPos.y - destPos.y));
+    }
+
+    public static int CalcEuclideanDistance(Vector2 curPos, Vector2 destPos)
+    {
+        return (int)Mathf.Sqrt(((destPos.x - curPos.x) * (destPos.x - curPos.x)) + ((destPos.y - curPos.y) * (destPos.y - curPos.y)));
+    }
 }

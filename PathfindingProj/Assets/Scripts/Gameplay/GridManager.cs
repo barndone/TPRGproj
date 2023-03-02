@@ -613,6 +613,7 @@ public class GridManager : MonoBehaviour
 
 
     //  given a starting point, an endpoint, and a list to output as the path, traverse to the destination point
+    //  using Dijkstra's
     public bool CalculatePath(Vector2 startPos, Vector2 destPos, out List<Vector2> path)
     {
         //  open list for nodes we are currently processing
@@ -836,6 +837,179 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    //  given a starting point, an end point, and an output list for the path- Utilize the Manhattan Heuristic to calculate a path
+    //  with A*
+    //  h = difference in X positions + difference in Y positions
+    //  g = move cost
+    //  f = g + h
+    public bool CalculateAStarPath(Vector2 startPos, Vector2 destPos, out List<Vector2> path)
+    {
+        //  open list for nodes we are currently processing
+        Queue<Tile> tilesToProcess = new Queue<Tile>();
+        //  closed list for already processed nodes
+        List<Vector2> processedTilePositions = new List<Vector2>();
+
+        path = new List<Vector2>();
+
+        //  push the tile at the startPos to the front of the open list
+        tilesToProcess.Enqueue(map[startPos]);
+
+        //  iterate from the start position until we find the destPos tile (visited == true)
+        do
+        {
+            //  cachce the current tile as Current (help readability)
+            Tile Current = tilesToProcess.Peek();
+            //  check if the tile we are processing has a tile to the north of it
+            if (Current.hasNorth())
+            {
+                //  cache the current North tile as North (help readability)
+                Tile North = Current.North;
+                //  check if the tile to the north of it has already been visited
+                if (!North.Visited)
+                {
+                    //  check if that tile position is not in processedTilePositions
+                    if (!processedTilePositions.Contains(North.MapPos))
+                    {
+                        //  calculate the hScore of the North tile
+                        North.hScore = CoordinateUtils.CalcManhattanDistance(North.MapPos, destPos);
+                        //  calculate the fScore (curScore) => hScore + gScore (MoveScore)
+                        North.curScore = North.hScore + North.MoveScore;
+
+                        //  check if that tile is not occupied or an obstacle
+                        if (!North.Obstacle && !North.Occupied)
+                        {
+                            North.prevTile = Current;
+                            //  if not, add to the tiles to process
+                            tilesToProcess.Enqueue(North);
+                        }
+                    }
+                }
+            }
+
+            //  check if the tile we are processing has a tile to the east of it
+            if (Current.hasEast())
+            {
+                //  cache the current east tile as east (help readability)
+                Tile East = Current.East;
+                //  check if the tile to the east of it has already been visited
+                if (!East.Visited)
+                {
+                    //  check if that tile position is not in processedTilePositions
+                    if (!processedTilePositions.Contains(East.MapPos))
+                    {
+                        //  calculate the hScore of the East tile
+                        East.hScore = CoordinateUtils.CalcManhattanDistance(East.MapPos, destPos);
+                        //  calculate the fScore (curScore) => hScore + gScore (MoveScore)
+                        East.curScore = East.hScore + East.MoveScore;
+
+                        //  check if that tile is not occupied or an obstacle
+                        if (!East.Obstacle && !East.Occupied)
+                        {
+                            East.prevTile = Current;
+                            //  if not, add to the tiles to process
+                            tilesToProcess.Enqueue(East);
+                        }
+                    }
+                }
+            }
+
+            //  check if the tile we are processing has a tile to the south of it
+            if (Current.hasSouth())
+            {
+                //  cache the current south tile as south (help readability)
+                Tile South = Current.South;
+                //  check if the tile to the south of it has already been visited
+                if (!South.Visited)
+                {
+                    //  check if that tile position is not in processedTilePositions
+                    if (!processedTilePositions.Contains(South.MapPos))
+                    {
+                        //  calculate the hScore of the South tile
+                        South.hScore = CoordinateUtils.CalcManhattanDistance(South.MapPos, destPos);
+                        //  calculate the fScore (curScore) => hScore + gScore (MoveScore)
+                        South.curScore = South.hScore + South.MoveScore;
+
+                        //  check if that tile is not occupied or an obstacle
+                        if (!South.Obstacle && !South.Occupied)
+                        {
+                            South.prevTile = Current;
+                            //  if not, add to the tiles to process
+                            tilesToProcess.Enqueue(South);
+                        }
+                    }
+                }
+            }
+
+            //  check if the tile we are processing has a tile to the west of it
+            if (Current.hasWest())
+            {
+                //  cache the current west tile as west (help readability)
+                Tile West = Current.West;
+                //  check if the tile to the west of it has already been visited
+                if (!West.Visited)
+                {
+                    //  check if that tile position is not in processedTilePositions
+                    if (!processedTilePositions.Contains(West.MapPos))
+                    {
+                        //  calculate the hScore of the South tile
+                        West.hScore = CoordinateUtils.CalcManhattanDistance(West.MapPos, destPos);
+                        //  calculate the fScore (curScore) => hScore + gScore (MoveScore)
+                        West.curScore = West.hScore + West.MoveScore;
+
+                        //  check if that tile is not occupied or an obstacle
+                        if (!West.Obstacle && !West.Occupied)
+                        {
+                            West.prevTile = Current;
+                            //  if not, add to the tiles to process
+                            tilesToProcess.Enqueue(West);
+                        }
+                    }
+                }
+            }
+            //  mark the current node as visited
+            Current.Visited = true;
+
+            //  Add the position of the current tile to the processedTilePositions list and pop it from the queue
+            processedTilePositions.Add(tilesToProcess.Dequeue().MapPos);
+            //  sort the queue according to our F-score
+            tilesToProcess = new Queue<Tile>(tilesToProcess.OrderBy(x => x.curScore));
+
+        } while (!map[destPos].Visited);
+
+        //  check if the destination was reached
+        if (map[destPos].Visited)
+        {
+            //  if so, add the position to the path list
+            path.Add(destPos);
+
+            //  mark the current tile as the tile at the destPos
+            Tile current = map[destPos];
+            current.Visited = false;
+            //  while the path list does NOT contain the startPos
+            do
+            {
+                //  move current to the prevTile
+                current = current.prevTile;
+                //  add the position of the new current to the list
+                path.Add(current.MapPos);
+                current.Visited = false;
+
+            } while (!path.Contains(startPos));
+
+            //  reverse the list to get our path
+            path.Reverse();
+
+            //  return that we found a path
+            return true;
+        }
+        //  otherwise the destination could not be reached
+        else
+        {
+            //  return false with an empty list (for now)
+            return false;
+        }
+    }
+
     public void ResetTiles()
     {
         //  iterate through each tile on the map and reset the flags from Dijkstra algo
@@ -849,6 +1023,8 @@ public class GridManager : MonoBehaviour
             tile.Visited = false;
             //  reset the current score
             tile.curScore = 0;
+
+            tile.hScore = 0;
 
             //  remove the highlight
             tile.highlight = false;

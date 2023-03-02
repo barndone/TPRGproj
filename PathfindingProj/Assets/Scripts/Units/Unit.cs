@@ -17,6 +17,7 @@ public class Unit : MonoBehaviour
     [SerializeField] public GridManager gridManager;
     [SerializeField] public UIController uiController;
     [SerializeField] public TurnManager turnManager;
+    [SerializeField] public BaseController partyManager;
 
     //  flag for if the unit is selected
     [SerializeField] public bool isSelected;
@@ -34,6 +35,9 @@ public class Unit : MonoBehaviour
     public List<Vector2> pathToMove = new List<Vector2>();
 
     [SerializeField] private SpriteRenderer sprite;
+    [SerializeField] public Sprite deadSprite;
+
+
     //  flag for if the unit has a path
     public bool hasPath = false;
     //  index for iteration through path list
@@ -248,9 +252,40 @@ public class Unit : MonoBehaviour
                     }
                 }
             }
+            //  logic for cancelling movement
             if (uiController.cancelWish)
             {
-                //  start of turn, store the 
+                //  if the unit has moved:
+                if (hasMoved)
+                {
+                    //  re-assign hasMoved to false
+                    hasMoved = false;
+                    //  move the unit back to their position at the start of the turn:
+
+                    //  mark the current tile is unoccupied
+                    gridManager.map[mapPosition].Occupied = false;
+                    //  assign mapPosition to startOfTurnPos
+                    mapPosition = startOfTurnPos;
+                    //  update the transform of the unit in world space to the world space position of the new tile
+                    transform.position = gridManager.map[mapPosition].gameObj.transform.position;
+                    //  update currentTile reference
+                    currentTile = gridManager.map[mapPosition];
+                    //  mark the current tile as occupied
+                    gridManager.map[mapPosition].Occupied = true;
+                    //  mark the occupying unit of the current tile as this unit
+                    currentTile.occupyingUnit = this;
+
+                    //  cleanup:
+                    //  clear path to move
+                    pathToMove.Clear();
+                    //  reset pathIndex to 1
+                    pathIndex = 1;
+                    //  mark that there is no longer a path
+                    hasPath = false;
+
+                }
+                //  otherwise, do nothing but reset cancelWish to false!
+                uiController.cancelWish = false;
             }
             if (uiController.waitWish)
             {
@@ -265,6 +300,16 @@ public class Unit : MonoBehaviour
         }
         //  otherwise, no color change
         else { sprite.color = Color.white; }
+
+        //  if curHealth is less than or equal to 0:
+        if (curHealth <= 0)
+        {
+            //  remove this unit from the party (since it's dead)
+            partyManager.party.Remove(this);
+            sprite.sprite = deadSprite;
+            this.selectable = false;
+            animator.enabled = false;
+        }
     }
 
     protected void OnMouseEnter()
@@ -432,6 +477,8 @@ public class Unit : MonoBehaviour
         }
 
         uiController.ResetFlags();
+
+        startOfTurnPos = mapPosition;
     }
 
     //  functionality for attacking

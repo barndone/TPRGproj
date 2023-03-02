@@ -1544,6 +1544,13 @@ MonoBehaviour:
   TurnManager: {fileID: 661041297}
   uiCon: {fileID: 2048059172}
   noMoreActions: 0
+  possibleEnemies:
+  - {fileID: 6282762469873455234, guid: 203ba15d3cba2ea43aaa86a5610fb30c, type: 3}
+  - {fileID: 6282762469873455234, guid: 548541afe14d7074aaca4acab1339e6a, type: 3}
+  - {fileID: 6282762469873455234, guid: 61daa709e17f59c43baa984c0a5195bd, type: 3}
+  - {fileID: 6282762469873455234, guid: a72a21b60873397458a73a8e274d1075, type: 3}
+  - {fileID: 2879690129075260284, guid: dc34f89908b62934c9ae895c222412c6, type: 3}
+  partySize: 5
 --- !u!4 &1386487357
 Transform:
   m_ObjectHideFlags: 0

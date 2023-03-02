@@ -48,7 +48,7 @@ public class Tile : MonoBehaviour, IComparer<Tile>
     [SerializeField] private Vector2 mapPos;
     public Vector2 MapPos { get { return mapPos; } set { mapPos = value; } }
 
-    //  the movement cost of this tile
+    //  the movement cost of this tile (g score)
     [SerializeField] private int moveScore = 1;
     //  used for test purposes (swapping tiles from ground to water)
     [SerializeField] public int defaultDistance = 1;
@@ -58,8 +58,12 @@ public class Tile : MonoBehaviour, IComparer<Tile>
     //  public accesser for the default distance
     public int DefaultDistance { get { return defaultDistance; } }
 
-    //  the current score of the tile (used for pathfinding)
+    //  the current F-score of the tile (used for pathfinding)
     public int curScore = 0;
+
+    //  the current H-score of the tile (used for pathfinding)
+    public int hScore = 0;
+
     //  reference to the previous tile (used for pathfinding)
     public Tile prevTile = null;
 
@@ -103,7 +107,7 @@ public class Tile : MonoBehaviour, IComparer<Tile>
     public int Compare(Tile a, Tile b)
     {
         //  sorts based off of distanceVal
-        return a.moveScore.CompareTo(b.moveScore);
+        return a.curScore.CompareTo(b.curScore);
     }
 
     //  on the mouse entering the collider of the tile:
@@ -141,12 +145,13 @@ public class Tile : MonoBehaviour, IComparer<Tile>
                     //  can the unit move? is there a move wish?
                     if (!activeUnit.hasMoved && activeUnit.uiController.moveWish)
                     {
+                        gridManager.ResetTiles();
                         Debug.Log("Path from: " + activeUnit.mapPosition + " to: " + CoordinateUtils.IsoWorldToDictionaryKey(this.transform.position));
                         //  since it's accessible initialize a path list
                         List<Vector2> path = new List<Vector2>();
                         //  calc the path from the active unit to this tile's position on the map
                         //  mark that the active unit has a path
-                        activeUnit.hasPath = gridManager.CalculatePath(activeUnit.mapPosition, mapPos, out path);
+                        activeUnit.hasPath = gridManager.CalculateAStarPath(activeUnit.mapPosition, mapPos, out path);
 
                         //  check if the active unit actually has a path (just in case)
                         if (activeUnit.hasPath)

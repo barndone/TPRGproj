@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TurnManager : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class TurnManager : MonoBehaviour
 
     //  reference to the computer controller (stores each unit the computer has contorl over)
     [SerializeField] private ComputerController cpu;
+
 
     private void TurnStart()
     {
@@ -117,19 +119,34 @@ public class TurnManager : MonoBehaviour
 
     void Update()
     {
-        //  if there are no more actions the CPU could take AND it is NOT currently the player's turn
-        if (cpu.noMoreActions && !playerTurn)
+        //  are all enemies defeated?
+        if (cpu.party.Count == 0)
         {
-            //  time to end it all
-            TurnEnd();
+            VictoryCondition();
+        }
+        //  are all allies defeated?
+        else if (player.party.Count == 0)
+        {
+            DefeatCondition();
+        }
+        else
+        {
+            //  if there are no more actions the CPU could take AND it is NOT currently the player's turn
+            if (cpu.noMoreActions && !playerTurn)
+            {
+                //  time to end it all
+                TurnEnd();
+            }
+
+            //  otherwise if there are no more actions the player could take and it is currently the player's turn
+            else if (player.noMoreActions && playerTurn)
+            {
+                //  time to end it all
+                TurnEnd();
+            }
         }
 
-        //  otherwise if there are no more actions the player could take and it is currently the player's turn
-        else if (player.noMoreActions && playerTurn)
-        {
-            //  time to end it all
-            TurnEnd();
-        }
+
     }
 
     //  Called at the end of every frame to see if the victory condition is met
@@ -137,12 +154,17 @@ public class TurnManager : MonoBehaviour
     void VictoryCondition()
     {
 
+            //  the player has won!
+            //  queue victory fanfare!
+            SceneManager.LoadScene(4);
     }
 
     //  Called at the end of every freame to see if the defeat condition is met:
-    //      all units defeated? hell yeah brother
+    //      all units defeated? hell no brother
     void DefeatCondition()
     {
-
+            //  the player has lost...
+            //  queue sad trombone :(
+            SceneManager.LoadScene(3);
     }
 }
