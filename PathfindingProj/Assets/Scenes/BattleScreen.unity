@@ -726,6 +726,11 @@ MonoBehaviour:
   playerTurn: 1
   player: {fileID: 1006500693}
   cpu: {fileID: 1386487356}
+  buttonSource: {fileID: 2048059173}
+  buttonSound: {fileID: 8300000, guid: 62b623b9ee6a179468e6a3427d803067, type: 3}
+  audioSource: {fileID: 661041300}
+  musicIntro: {fileID: 8300000, guid: cf08e21d689786d42a806b7c32fe6965, type: 3}
+  musicEnd: {fileID: 8300000, guid: ada22dcf985d17b42b1c7a4d846f2214, type: 3}
 --- !u!4 &661041298
 Transform:
   m_ObjectHideFlags: 0
@@ -762,11 +767,11 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_audioClip: {fileID: 8300000, guid: 8cf08cfe7532a5d4c917ba1862a3633c, type: 3}
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -1550,7 +1555,7 @@ MonoBehaviour:
   - {fileID: 6282762469873455234, guid: 61daa709e17f59c43baa984c0a5195bd, type: 3}
   - {fileID: 6282762469873455234, guid: a72a21b60873397458a73a8e274d1075, type: 3}
   - {fileID: 2879690129075260284, guid: dc34f89908b62934c9ae895c222412c6, type: 3}
-  partySize: 5
+  partySize: 3
 --- !u!4 &1386487357
 Transform:
   m_ObjectHideFlags: 0

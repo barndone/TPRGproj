@@ -200,3 +200,18 @@ MonoBehaviour:
   maxHealth: 10
   attack: 2
   defence: 1
+  audioSource: {fileID: 0}
+  walkSounds:
+  - {fileID: 8300000, guid: ac4123452749a414d8d3633c618ffb5b, type: 3}
+  - {fileID: 8300000, guid: 449375df559ef6d44ace8b8ed61edb36, type: 3}
+  - {fileID: 8300000, guid: 41c3f559eb488ad46926def38f646ae6, type: 3}
+  atkSounds:
+  - {fileID: 8300000, guid: e5f3934674112c644846ed0ba706ef18, type: 3}
+  - {fileID: 8300000, guid: 930e4eb742d94f942bd704a078b34421, type: 3}
+  - {fileID: 8300000, guid: 4af7ebfb1b7b4774ca14477130aff53a, type: 3}
+  skillSound: {fileID: 8300000, guid: ea75a80117be9b041baa07b0c44626ee, type: 3}
+  dmgTaken:
+  - {fileID: 8300000, guid: 7a8dbdaf820e2c04e9499837d35c0c8e, type: 3}
+  - {fileID: 8300000, guid: 5a1fdbfdfaa389c46863f7a34d4f3d8f, type: 3}
+  - {fileID: 8300000, guid: d4641aa6a3bb98344a3b3c2791929fc6, type: 3}
+  deathSound: {fileID: 8300000, guid: 0159c86c18822f44d97f034012aad93f, type: 3}

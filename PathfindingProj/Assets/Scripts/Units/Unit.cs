@@ -100,6 +100,14 @@ public class Unit : MonoBehaviour
         west
     }
 
+    [SerializeField] public AudioSource audioSource;
+
+    [SerializeField] public AudioClip[] walkSounds;
+    [SerializeField] public AudioClip[] atkSounds;
+    [SerializeField] public AudioClip skillSound;
+    [SerializeField] public AudioClip[] dmgTaken;
+    [SerializeField] public AudioClip deathSound;
+
 
     void Start()
     {
@@ -107,6 +115,7 @@ public class Unit : MonoBehaviour
         turnManager = FindObjectOfType<TurnManager>();
         gridManager = FindObjectOfType<GridManager>();
         uiController = FindObjectOfType<UIController>();
+        audioSource = FindObjectOfType<AudioSource>();
 
         //  assign the current tile
         currentTile = gridManager.map[mapPosition];
@@ -150,6 +159,10 @@ public class Unit : MonoBehaviour
                         //  if the wait time is less than or equal to 0
                         if (timer <= 0.0f)
                         {
+                            //  pick a random walk sound and play that sound
+                            var randomWalk = walkSounds[Random.Range(0, walkSounds.Length)];
+                            audioSource.PlayOneShot(randomWalk);
+
                             timer = timeToWait;
                             //  if so, mark the current tile is unoccupied
                             gridManager.map[mapPosition].Occupied = false;
@@ -211,6 +224,8 @@ public class Unit : MonoBehaviour
                     gridManager.ShowAccessibleTiles(this, out accessibleTiles);
                     if (hasAction)
                     {
+
+
                         hasAction = false;
                         hasActed = true;
                         Debug.Log("Attacking!");
@@ -237,6 +252,10 @@ public class Unit : MonoBehaviour
                     gridManager.ShowAccessibleTiles(this, out accessibleTiles);
                     if (hasAction)
                     {
+                        //  play the skill sound
+                        audioSource.PlayOneShot(skillSound);
+
+
                         hasAction = false;
                         hasActed = true;
                         Debug.Log("Used Skill!");
@@ -304,6 +323,7 @@ public class Unit : MonoBehaviour
         //  if curHealth is less than or equal to 0:
         if (curHealth <= 0)
         {
+            audioSource.PlayOneShot(deathSound);
             //  remove this unit from the party (since it's dead)
             partyManager.party.Remove(this);
             sprite.sprite = deadSprite;
@@ -374,7 +394,7 @@ public class Unit : MonoBehaviour
             }
 
             //  otherwise, just show their stats
-            else
+            else if (!turnManager.playerTurn && !ally)
             {
                 //  do the stats thing
 
@@ -497,6 +517,8 @@ public class Unit : MonoBehaviour
                 {
                     //  time to attack!
                     other.CurHealth -= (this.Attack - other.Defence);
+
+                    StartCoroutine(PlayRandomAttackAndDamageSounds(other));
                 }
                 else
                 {
@@ -518,4 +540,19 @@ public class Unit : MonoBehaviour
     public virtual void Skill(Tile targetTile) { /* Intentionally left blank - to be implemented in derived classes */ }
 
     public virtual void MOTooltip() { /* intentionally left blank - to be implemented in derived classes */ }
+
+    //  Play the intro to the scene track before starting to play the loopable part of the track
+    IEnumerator PlayRandomAttackAndDamageSounds(Unit other)
+    {
+        //  get a random attacking sound
+        var randomAtk = this.atkSounds[Random.Range(0, atkSounds.Length)];
+        audioSource.PlayOneShot(randomAtk);
+
+        yield return new WaitForSecondsRealtime(randomAtk.length);
+
+        //  find a random damage taken sound
+        var randomDamageSound = other.dmgTaken[Random.Range(0, dmgTaken.Length)];
+        //  play that random sound
+        other.audioSource.PlayOneShot(randomDamageSound);
+    }
 }

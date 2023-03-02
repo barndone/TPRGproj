@@ -61,6 +61,10 @@ public class Warrior : Unit
                         other.CurHealth--;
                     }
 
+                    //  find a random damage taken sound
+                    var randomDamageSound = other.dmgTaken[Random.Range(0, dmgTaken.Length)];
+                    //  play that random sound
+                    other.audioSource.PlayOneShot(randomDamageSound);
                 }
 
                 //  assign the other unit as the occupyingUnit of the tile it landed in

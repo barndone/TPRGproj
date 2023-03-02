@@ -15,7 +15,18 @@ public class TurnManager : MonoBehaviour
     //  reference to the computer controller (stores each unit the computer has contorl over)
     [SerializeField] private ComputerController cpu;
 
+    //  Fields for controlling audio:
+    bool shouldExit = false;
 
+    [SerializeField] AudioSource buttonSource;
+    [SerializeField] AudioClip buttonSound;
+
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip musicIntro;
+    [SerializeField] AudioClip musicEnd;
+
+    //  method called at the start of every turn, makes sure if it is the player turn, enemies can't be selected
+    //  and vice versa
     private void TurnStart()
     {
         //  if it is the players turn
@@ -57,6 +68,7 @@ public class TurnManager : MonoBehaviour
         }
     }
 
+    //  used for signifying the end of the turn
     public void TurnEnd()
     {
         //  flip the value of the bool playerTurn
@@ -117,6 +129,7 @@ public class TurnManager : MonoBehaviour
         }
     }
 
+
     void Update()
     {
         //  are all enemies defeated?
@@ -149,6 +162,11 @@ public class TurnManager : MonoBehaviour
 
     }
 
+    private void Awake()
+    {
+        StartCoroutine(PlayMusicIntro(musicIntro));
+    }
+
     //  Called at the end of every frame to see if the victory condition is met
     //      all enemies defeated? hell yeah brother
     void VictoryCondition()
@@ -156,7 +174,7 @@ public class TurnManager : MonoBehaviour
 
             //  the player has won!
             //  queue victory fanfare!
-            SceneManager.LoadScene(4);
+        StartCoroutine(DelayedLoad(musicEnd, 4));
     }
 
     //  Called at the end of every freame to see if the defeat condition is met:
@@ -165,6 +183,34 @@ public class TurnManager : MonoBehaviour
     {
             //  the player has lost...
             //  queue sad trombone :(
-            SceneManager.LoadScene(3);
+        StartCoroutine(DelayedLoad(musicEnd, 3));
+    }
+
+    //Delayed load for a scene with parameters for an audio clip, and a scene index
+    IEnumerator DelayedLoad(AudioClip clip, int sceneIndex)
+    {
+        if (!shouldExit)
+        {
+
+            shouldExit = true;
+
+            audioSource.Stop();
+            audioSource.PlayOneShot(clip);
+
+            yield return new WaitForSecondsRealtime(clip.length);
+
+            shouldExit = false;
+            SceneManager.LoadScene(sceneIndex);
+        }
+    }
+
+    //  Play the intro to the scene track before starting to play the loopable part of the track
+    IEnumerator PlayMusicIntro(AudioClip intro)
+    {
+        audioSource.PlayOneShot(intro);
+
+        yield return new WaitForSecondsRealtime(intro.length);
+
+        audioSource.Play();
     }
 }
