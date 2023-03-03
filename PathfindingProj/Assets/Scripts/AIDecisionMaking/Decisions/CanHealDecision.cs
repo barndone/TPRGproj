@@ -18,23 +18,45 @@ public class CanHealDecision : IDecision
     //  evaluate the decision
     public IDecision MakeDecision(Unit agent)
     {
-        agent.isSelected = !agent.isSelected;
-        agent.gridManager.activeUnit = agent;
-        //  update the selected animation depending on isSelected being T/F
-        agent.animator.SetBool("selected", agent.isSelected);
 
-        //  if this unit is a healer
-        if (agent.canHeal)
+        if (agent.partyManager.activeUnit == null)
         {
-            //  to healer branch
-            return trueBranch.MakeDecision(agent);
-        }
+            agent.isSelected = !agent.isSelected;
+            agent.gridManager.activeUnit = agent;
+            agent.partyManager.activeUnit = agent;
 
-        //  otherwise, they cannot heal
+            //  update the selected animation depending on isSelected being T/F
+            agent.animator.SetBool("selected", agent.isSelected);
+
+            return null;
+        }
         else
         {
-            //  to combat branch
-            return falseBranch.MakeDecision(agent);
+            if (agent.partyManager.activeUnit == agent)
+            {
+                if (agent.acting)
+                {
+                    return null;
+                }
+
+                //  if this unit is a healer
+                if (agent.canHeal)
+                {
+                    //  to healer branch
+                    return trueBranch.MakeDecision(agent);
+                }
+
+                //  otherwise, they cannot heal
+                else
+                {
+                    //  to combat branch
+                    return falseBranch.MakeDecision(agent);
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

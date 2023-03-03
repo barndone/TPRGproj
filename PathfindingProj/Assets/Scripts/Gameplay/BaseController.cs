@@ -11,6 +11,8 @@ public class BaseController : MonoBehaviour
 
     public bool noMoreActions = false;
 
+    public Unit activeUnit;
+
     private void Update()
     {
         if (uiCon.endTurnWish)

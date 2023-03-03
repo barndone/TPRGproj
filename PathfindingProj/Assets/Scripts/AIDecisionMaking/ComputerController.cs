@@ -66,7 +66,7 @@ public class ComputerController : BaseController
             {
                 //  assign the current decision to the units corresponding decision in the list
                 IDecision curDecision = decisionRoots[i];
-
+            
                 //  while the decision is not returning null:
                 while (curDecision != null)
                 {

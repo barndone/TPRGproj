@@ -48,7 +48,7 @@ public class Unit : MonoBehaviour
 
     public bool hasAction = false;
 
-    private bool acting = false;
+    public bool acting = false;
 
     public bool waiting = false;
 
@@ -140,15 +140,16 @@ public class Unit : MonoBehaviour
 
     void Update()
     {
-        //  if this unit is selected
-        if (isSelected)
+        //  if this unit is the active unit in the party manager
+        if (partyManager.activeUnit == this)
         {
-            //  look for if the player wants to take a given action!
+            //  check for move, action, or wait wish
             if (uiController.moveWish)
             {
-                //  check if it has a path
+                //  handle movement if it hasn't moved
                 if (!hasMoved)
                 {
+                    //  check if it isn't currently moving
                     gridManager.HideAccessibleTiles(this, accessibleTiles);
                     accessibleTiles.Clear();
                     gridManager.ResetTiles();
@@ -188,6 +189,30 @@ public class Unit : MonoBehaviour
                             //  if the pathIndex is greater than or equal to the number of entries in pathToMove:
                             if (pathIndex > MaxMove || pathIndex >= pathToMove.Count)
                             {
+                                //  Time to star the action Process
+                                uiController.moveWish = false;
+                                hasMoved = true;
+                                acting = false;
+
+                                //  hide the accessible tiles of the unit
+                                gridManager.HideAccessibleTiles(this, accessibleTiles);
+                                accessibleTiles.Clear();
+                                gridManager.ResetTiles();
+
+                                if (hasActed)
+                                {
+                                    EndOfUnitActions();
+                                }
+                            }
+                            //  if the next location on the path is the target position:
+                            else if (pathToMove[pathIndex] == target.mapPosition)
+                            {
+
+                                mapPosition = pathToMove[pathIndex - 1];
+                                //  update the transform of the unit in world space to the world space position of the new tile
+                                transform.position = gridManager.map[mapPosition].gameObj.transform.position;
+                                //  update currentTile reference
+                                currentTile = gridManager.map[mapPosition];
 
                                 //  Time to star the action Process
                                 uiController.moveWish = false;
@@ -220,67 +245,80 @@ public class Unit : MonoBehaviour
                 }
             }
 
-            if (uiController.attackWish)
-            {           
-                if (!hasActed)
-                {
-                    gridManager.HideAccessibleTiles(this, accessibleTiles);
-                    accessibleTiles.Clear();
-                    gridManager.ResetTiles();
-            
-                    gridManager.ShowAccessibleTiles(this, out accessibleTiles);
-                    if (hasAction)
-                    {
-
-
-                        hasAction = false;
-                        hasActed = true;
-                        Debug.Log("Attacking!");
-                        if (hasMoved)
-                        {
-                            EndOfUnitActions();
-                        }
-                        else
-                        {
-                            accessibleTiles.Clear();
-                            gridManager.ResetTiles();
-                        }
-                    }
-                }
-            }
-            if (uiController.skillWish)
+            if (uiController.attackWish || uiController.skillWish)
             {
-                if (!hasActed)
+                //  handle actions
+                if (uiController.attackWish)
                 {
-                    gridManager.HideAccessibleTiles(this, accessibleTiles);
-                    accessibleTiles.Clear();
-                    gridManager.ResetTiles();
-            
-                    gridManager.ShowAccessibleTiles(this, out accessibleTiles);
-                    if (hasAction)
+                    if (!hasActed)
                     {
-                        //  play the skill sound
-                        audioSource.PlayOneShot(skillSound);
+                        gridManager.HideAccessibleTiles(this, accessibleTiles);
+                        accessibleTiles.Clear();
+                        gridManager.ResetTiles();
 
-
-                        hasAction = false;
-                        hasActed = true;
-                        Debug.Log("Used Skill!");
-                        if (hasMoved)
+                        gridManager.ShowAccessibleTiles(this, out accessibleTiles);
+                        if (hasAction)
                         {
-                            EndOfUnitActions();
+
+
+                            hasAction = false;
+                            hasActed = true;
+                            Debug.Log("Attacking!");
+                            if (hasMoved)
+                            {
+                                EndOfUnitActions();
+                            }
+                            else
+                            {
+                                accessibleTiles.Clear();
+                                gridManager.ResetTiles();
+                            }
                         }
-                        else
+                    }
+                }
+
+                if (uiController.skillWish)
+                {
+                    if (!hasActed)
+                    {
+                        gridManager.HideAccessibleTiles(this, accessibleTiles);
+                        accessibleTiles.Clear();
+                        gridManager.ResetTiles();
+
+                        gridManager.ShowAccessibleTiles(this, out accessibleTiles);
+                        if (hasAction)
                         {
-                            accessibleTiles.Clear();
-                            gridManager.ResetTiles();
+                            //  play the skill sound
+                            audioSource.PlayOneShot(skillSound);
+
+
+                            hasAction = false;
+                            hasActed = true;
+                            Debug.Log("Used Skill!");
+                            if (hasMoved)
+                            {
+                                EndOfUnitActions();
+                            }
+                            else
+                            {
+                                accessibleTiles.Clear();
+                                gridManager.ResetTiles();
+                            }
                         }
                     }
                 }
             }
-            //  logic for cancelling movement
+
+            if (uiController.waitWish)
+            {
+                //  handle waiting
+                EndOfUnitActions();
+
+            }
+
             if (uiController.cancelWish)
             {
+                //  handle cancelling movement
                 //  if the unit has moved:
                 if (hasMoved)
                 {
@@ -312,10 +350,6 @@ public class Unit : MonoBehaviour
                 }
                 //  otherwise, do nothing but reset cancelWish to false!
                 uiController.cancelWish = false;
-            }
-            if (uiController.waitWish)
-            {
-                EndOfUnitActions();
             }
         }
         //  if the unit has acted and moved
@@ -385,6 +419,8 @@ public class Unit : MonoBehaviour
                     {
                         //  then we can go through the selection process!
                         //  swap whether it was selected
+
+
                         isSelected = !isSelected;
                         //  update the selected animation depending on isSelected being T/F
                         animator.SetBool("selected", isSelected);
@@ -394,8 +430,11 @@ public class Unit : MonoBehaviour
                         {
                             //  pass that this is the active unit to the grid manager
                             gridManager.activeUnit = this;
+                            //  and the unit controller
+                            partyManager.activeUnit = this;
+                            //  and the ui controller
                             uiController.unitSelected = isSelected;
-                            //gridManager.ShowAccessibleTiles(this, out accessibleTiles);
+                            
                         }
                         //  otherwise, they were unselected
                         else
@@ -404,6 +443,8 @@ public class Unit : MonoBehaviour
                             gridManager.HideAccessibleTiles(this, accessibleTiles);
                             //  mark that no unit is active
                             gridManager.activeUnit = null;
+                            //  and the unit controller
+                            partyManager.activeUnit = null;
                             //  clear the accessible tiles list
                             accessibleTiles.Clear();
                             uiController.unitSelected = isSelected;
@@ -411,52 +452,6 @@ public class Unit : MonoBehaviour
                     }
                 }
             }
-
-            //  otherwise, just show their stats
-            else if (!turnManager.playerTurn && !ally)
-            {
-                //  do the stats thing
-
-                    //  temp for testing
-
-                //  then we can do the song and dance
-                //  check if we can make this the active unit:
-                if (gridManager.activeUnit == null)
-                {
-                    //  check if the unit has not taken its actions
-                    if (!waiting)
-                    {
-                        //  then we can go through the selection process!
-                        //  swap whether it was selected 
-                        isSelected = !isSelected;
-                        //  update the selected animation depending on isSelected being T/F
-                        animator.SetBool("selected", isSelected);
-
-                        //  if the unit is now selected
-                        if (isSelected)
-                        {
-                            //  pass that this is the active unit to the grid manager
-                            gridManager.activeUnit = this;
-                            uiController.unitSelected = isSelected;
-                            //gridManager.ShowAccessibleTiles(this, out accessibleTiles);
-                        }
-                        //  otherwise, they were unselected
-                        else
-                        {
-                            //  hide movement options
-                            gridManager.HideAccessibleTiles(this, accessibleTiles);
-                            //  mark that no unit is active
-                            gridManager.activeUnit = null;
-                            //  clear the accessible tiles list
-                            accessibleTiles.Clear();
-                            uiController.unitSelected = isSelected;
-                        }
-                    }
-                }
-            }
-
-            //
-            
             //  otherwise, do nothing
         }
     }
@@ -492,6 +487,7 @@ public class Unit : MonoBehaviour
         gridManager.HideAccessibleTiles(this, accessibleTiles);
         //  mark that there is no longer an active unit
         gridManager.activeUnit = null;
+        partyManager.activeUnit = null;
         //  clear the accessible tiles of the unit
         accessibleTiles.Clear();
         gridManager.ResetTiles();
@@ -539,12 +535,14 @@ public class Unit : MonoBehaviour
 
                     StartCoroutine(PlayRandomAttackAndDamageSounds(other));
                 }
+
                 else
                 {
                     this.hasAction = false;
                     this.hasActed = false;
                     Debug.Log("Target tile occupied by ally");
                 }
+
             }
 
             else

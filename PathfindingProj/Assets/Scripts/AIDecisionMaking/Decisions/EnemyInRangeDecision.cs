@@ -67,7 +67,10 @@ public class EnemyInRangeDecision : IDecision
             agent.uiController.moveWish = true;
 
             //  wait
-            //agent.uiController.waitWish = true;
+            if (agent.hasMoved)
+            {
+                agent.uiController.waitWish = true;
+            }
 
             //  exit the decision loop
             return null;
