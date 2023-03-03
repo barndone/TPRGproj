@@ -26,7 +26,7 @@ public class Unit : MonoBehaviour
     public Tile currentTile;
 
     //  reference to the animator attached to the unit
-    [SerializeField] private Animator animator;
+    [SerializeField] public Animator animator;
 
     //  reference for accessible tiles
     //  used in checking for valid movements
@@ -112,6 +112,8 @@ public class Unit : MonoBehaviour
     [SerializeField] public bool canHeal = false;
 
     public Unit target = null;
+
+    public IDecision unitDecisionRef;
 
 
     void Start()
@@ -328,9 +330,21 @@ public class Unit : MonoBehaviour
         //  if curHealth is less than or equal to 0:
         if (curHealth <= 0)
         {
+            //  we dead
             audioSource.PlayOneShot(deathSound);
             //  remove this unit from the party (since it's dead)
             partyManager.party.Remove(this);
+            
+            //  if this unit is not an ally
+            if (!ally)
+            {
+                //  cache the computerController ref
+                ComputerController cpu = partyManager.GetComponent<ComputerController>();
+
+                //  remove this units decision ref from the decisionRoots list
+                cpu.decisionRoots.Remove(this.unitDecisionRef);
+            }
+
             sprite.sprite = deadSprite;
             this.selectable = false;
             animator.enabled = false;

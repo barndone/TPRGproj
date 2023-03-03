@@ -10,10 +10,10 @@ public class TurnManager : MonoBehaviour
     public bool playerTurn = true;
 
     //  reference to the player controller (stores each unit the player has control over)
-    [SerializeField] private PlayerController player;
+    [SerializeField] public PlayerController player;
 
     //  reference to the computer controller (stores each unit the computer has contorl over)
-    [SerializeField] private ComputerController cpu;
+    [SerializeField] public ComputerController cpu;
 
     //  Fields for controlling audio:
     bool shouldExit = false;

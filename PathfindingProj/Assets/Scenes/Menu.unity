@@ -193,7 +193,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Pixel Tactics
+  m_Text: Tactics Goblin
 --- !u!222 &511883407
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -20,7 +20,6 @@ public class AllyInRangeDecision : IDecision
             //  heal the target
             //  calculate the path to the target
             agent.hasPath = agent.gridManager.CalculateAStarPath(agent.mapPosition, agent.target.mapPosition, out agent.pathToMove);
-            agent.isSelected = true;
             agent.uiController.moveWish = true;
 
             //  heal the target (tile)
@@ -37,11 +36,10 @@ public class AllyInRangeDecision : IDecision
 
             //  calculate the path to the target
             agent.hasPath = agent.gridManager.CalculateAStarPath(agent.mapPosition, agent.target.mapPosition, out agent.pathToMove);
-            agent.isSelected = true;
             agent.uiController.moveWish = true;
 
             //  wait
-            agent.uiController.waitWish = true;
+            //agent.uiController.waitWish = true;
 
             //  exit the decision loop
             return null;

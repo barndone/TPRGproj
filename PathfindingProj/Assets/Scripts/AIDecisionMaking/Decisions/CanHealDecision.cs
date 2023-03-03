@@ -6,18 +6,23 @@ public class CanHealDecision : IDecision
 {
     public bool healer = false;
 
-    IDecision trueBranch;
-    IDecision falseBranch;
+    public IDecision trueBranch;
+    public IDecision falseBranch;
     public CanHealDecision() { }
 
-    public CanHealDecision(bool canHeal) 
+    public CanHealDecision(Unit unit) 
     { 
-        this.healer = canHeal;
+        this.healer = unit.canHeal;
     }
 
     //  evaluate the decision
     public IDecision MakeDecision(Unit agent)
     {
+        agent.isSelected = !agent.isSelected;
+        agent.gridManager.activeUnit = agent;
+        //  update the selected animation depending on isSelected being T/F
+        agent.animator.SetBool("selected", agent.isSelected);
+
         //  if this unit is a healer
         if (agent.canHeal)
         {

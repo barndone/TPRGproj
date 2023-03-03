@@ -43,7 +43,6 @@ public class AllyNeedHealingDecision : IDecision
                     target = unit;
                 }
             }
-
         }
         //  if the target isn't null
         if (target != null)

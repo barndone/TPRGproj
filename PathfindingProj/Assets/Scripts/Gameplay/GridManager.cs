@@ -876,7 +876,7 @@ public class GridManager : MonoBehaviour
                         North.curScore = North.hScore + North.MoveScore;
 
                         //  check if that tile is not occupied or an obstacle
-                        if (!North.Obstacle && !North.Occupied)
+                        if (!North.Obstacle)
                         {
                             North.prevTile = Current;
                             //  if not, add to the tiles to process
@@ -903,7 +903,7 @@ public class GridManager : MonoBehaviour
                         East.curScore = East.hScore + East.MoveScore;
 
                         //  check if that tile is not occupied or an obstacle
-                        if (!East.Obstacle && !East.Occupied)
+                        if (!East.Obstacle)
                         {
                             East.prevTile = Current;
                             //  if not, add to the tiles to process
@@ -930,7 +930,7 @@ public class GridManager : MonoBehaviour
                         South.curScore = South.hScore + South.MoveScore;
 
                         //  check if that tile is not occupied or an obstacle
-                        if (!South.Obstacle && !South.Occupied)
+                        if (!South.Obstacle)
                         {
                             South.prevTile = Current;
                             //  if not, add to the tiles to process
@@ -957,7 +957,7 @@ public class GridManager : MonoBehaviour
                         West.curScore = West.hScore + West.MoveScore;
 
                         //  check if that tile is not occupied or an obstacle
-                        if (!West.Obstacle && !West.Occupied)
+                        if (!West.Obstacle)
                         {
                             West.prevTile = Current;
                             //  if not, add to the tiles to process
