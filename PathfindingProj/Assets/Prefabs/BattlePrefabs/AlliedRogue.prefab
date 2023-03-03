@@ -195,7 +195,7 @@ MonoBehaviour:
   skillRange: 1
   maxMove: 4
   timeToWait: 0.5
-  ally: 0
+  ally: 1
   curHealth: 10
   maxHealth: 10
   attack: 2
@@ -215,3 +215,4 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 5a1fdbfdfaa389c46863f7a34d4f3d8f, type: 3}
   - {fileID: 8300000, guid: d4641aa6a3bb98344a3b3c2791929fc6, type: 3}
   deathSound: {fileID: 8300000, guid: 0159c86c18822f44d97f034012aad93f, type: 3}
+  canHeal: 0

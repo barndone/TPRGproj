@@ -109,6 +109,11 @@ public class Unit : MonoBehaviour
     [SerializeField] public AudioClip deathSound;
 
 
+    [SerializeField] public bool canHeal = false;
+
+    public Unit target = null;
+
+
     void Start()
     {
         //  assign the turn manager, grid manager, and UI controller
