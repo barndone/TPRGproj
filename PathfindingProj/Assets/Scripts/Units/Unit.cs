@@ -84,6 +84,9 @@ public class Unit : MonoBehaviour
 
     //  accessor for the current health
     public int CurHealth { get { return curHealth; } set { curHealth = value; } }
+
+    //  check if a unit is dead
+    public bool IsDead { get { return curHealth <= 0; } }
     //  accessor for the max health
     public int MaxHealth { get { return maxHealth; } }
     //  accessor for the attack
@@ -194,6 +197,11 @@ public class Unit : MonoBehaviour
                                 hasMoved = true;
                                 acting = false;
 
+                                //  reset pathIndex to 1
+                                pathIndex = pathToMove.Count - 1;
+                                //  mark that there is no longer a path
+                                hasPath = false;
+
                                 //  hide the accessible tiles of the unit
                                 gridManager.HideAccessibleTiles(this, accessibleTiles);
                                 accessibleTiles.Clear();
@@ -204,8 +212,9 @@ public class Unit : MonoBehaviour
                                     EndOfUnitActions();
                                 }
                             }
+
                             //  if the next location on the path is the target position:
-                            else if (pathToMove[pathIndex] == target.mapPosition)
+                            if ( target != null && pathToMove[pathIndex] == target.mapPosition && hasPath)
                             {
 
                                 mapPosition = pathToMove[pathIndex - 1];
@@ -263,6 +272,8 @@ public class Unit : MonoBehaviour
 
                             hasAction = false;
                             hasActed = true;
+
+                            acting = false;
                             Debug.Log("Attacking!");
                             if (hasMoved)
                             {
@@ -294,6 +305,8 @@ public class Unit : MonoBehaviour
 
                             hasAction = false;
                             hasActed = true;
+
+                            acting = false;
                             Debug.Log("Used Skill!");
                             if (hasMoved)
                             {
@@ -361,8 +374,8 @@ public class Unit : MonoBehaviour
         //  otherwise, no color change
         else { sprite.color = Color.white; }
 
-        //  if curHealth is less than or equal to 0:
-        if (curHealth <= 0)
+        //  if the unit is dead
+        if (IsDead)
         {
             //  we dead
             audioSource.PlayOneShot(deathSound);
@@ -382,6 +395,11 @@ public class Unit : MonoBehaviour
             sprite.sprite = deadSprite;
             this.selectable = false;
             animator.enabled = false;
+
+            this.currentTile.Occupied = false;
+            this.currentTile.Obstacle = true;
+            this.currentTile.occupyingUnit = null;
+            this.currentTile = null;
         }
     }
 
@@ -483,6 +501,8 @@ public class Unit : MonoBehaviour
         hasActed = true;
         hasMoved = true;
 
+        target = null;
+
         //  hide the accessible tiles of the unit
         gridManager.HideAccessibleTiles(this, accessibleTiles);
         //  mark that there is no longer an active unit
@@ -532,8 +552,11 @@ public class Unit : MonoBehaviour
                 {
                     //  time to attack!
                     other.CurHealth -= (this.Attack - other.Defence);
-
+                    this.hasAction = false;
+                    this.hasActed = true;
                     StartCoroutine(PlayRandomAttackAndDamageSounds(other));
+
+                    Debug.Log("Attacking " + other + ", current health: " + other.curHealth);
                 }
 
                 else

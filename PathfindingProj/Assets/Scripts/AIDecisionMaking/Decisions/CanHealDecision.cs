@@ -21,13 +21,15 @@ public class CanHealDecision : IDecision
 
         if (agent.partyManager.activeUnit == null)
         {
-            agent.isSelected = !agent.isSelected;
-            agent.gridManager.activeUnit = agent;
-            agent.partyManager.activeUnit = agent;
+            if (!agent.waiting)
+            {
+                agent.isSelected = !agent.isSelected;
+                agent.gridManager.activeUnit = agent;
+                agent.partyManager.activeUnit = agent;
 
-            //  update the selected animation depending on isSelected being T/F
-            agent.animator.SetBool("selected", agent.isSelected);
-
+                //  update the selected animation depending on isSelected being T/F
+                agent.animator.SetBool("selected", agent.isSelected);
+            }
             return null;
         }
         else

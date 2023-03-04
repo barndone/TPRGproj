@@ -22,8 +22,11 @@ public class AllyInRangeDecision : IDecision
             agent.hasPath = agent.gridManager.CalculateAStarPath(agent.mapPosition, agent.target.mapPosition, out agent.pathToMove);
             agent.uiController.moveWish = true;
 
-            //  heal the target (tile)
-            agent.Skill(agent.target.currentTile);
+            if (agent.hasMoved)
+            {
+                //  heal the target (tile)
+                agent.Skill(agent.target.currentTile);
+            }
 
             //  exit the decision loop
             return null;

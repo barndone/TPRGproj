@@ -51,8 +51,11 @@ public class EnemyInRangeDecision : IDecision
             agent.hasPath = agent.gridManager.CalculateAStarPath(agent.mapPosition, agent.target.mapPosition, out agent.pathToMove);
             agent.uiController.moveWish = true;
 
-            //  attack the target (tile)
-            agent.Attacking(agent.target.currentTile);
+            if (agent.hasMoved)
+            {
+                //  attack the target (tile)
+                agent.Attacking(agent.target.currentTile);
+            }
 
             //  exit the decision loop
             return null;
