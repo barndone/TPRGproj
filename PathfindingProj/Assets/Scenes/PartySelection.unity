@@ -1152,7 +1152,7 @@ MonoBehaviour:
   buttonSound: {fileID: 8300000, guid: 62b623b9ee6a179468e6a3427d803067, type: 3}
   audioSource: {fileID: 1018686942}
   musicIntro: {fileID: 8300000, guid: 0167ae07a1634ac4d91e746cf68d10c6, type: 3}
-  musicEnd: {fileID: 8300000, guid: 5eabdce888a529e4cb01de43e6bd366a, type: 3}
+  musicEnd: {fileID: 8300000, guid: 749bc5df34483264585fd100a079f01e, type: 3}
   portraitOne: {fileID: 1203470626}
   portraitOneImage: {fileID: 1203470628}
   portraitTwo: {fileID: 1772821341}
