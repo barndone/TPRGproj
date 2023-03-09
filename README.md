@@ -38,3 +38,9 @@ From there, you will be able to launch the project!
 To build the project, got to File and select Build Settings, check that the Platform is set to PC, Mac & Linux Standalone, and then press Build or Build and Run.
 
 You will now have a standalone application for this project!
+
+## License
+
+This work is licensed under the **MIT License**. See [LICENSE.md](LICENSE.md) for details.
+
+Copyright 2023 (c) Brandon Eiler
