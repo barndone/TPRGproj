@@ -11,6 +11,10 @@ For the purposes of the assessment, this project has implemented:
 
 This project will support any version of **Unity 2020.3** or newer.
 
+
+> :warning: **WARNING**  
+> This project is a work in progress, as such some features may not be complete or *incredibly* janky!  
+
 ## Importing the Project  
 
 You can either download a zip file of the project through the repository, or you can clone the repository with this URL:  
