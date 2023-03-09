@@ -11,6 +11,10 @@ For the purposes of the assessment, this project has implemented:
 
 This project will support any version of **Unity 2020.3** or newer.
 
+
+> :warning: **WARNING**  
+> This project is a work in progress, as such some features may not be complete or *incredibly* janky!  
+
 ## Importing the Project  
 
 You can either download a zip file of the project through the repository, or you can clone the repository with this URL:  
@@ -29,6 +33,15 @@ To open the project in unity, after unzipping or cloning this project:
 * 4# Select the ***PathfindingProj folder*** and press 'select folder'  
 
 From there, you will be able to launch the project!
+
+## Running the Game in-engine  
+
+If you would like to run the game in the engine, navigate to the scenes folder in the project window and then open the Menu scene. This will allow you to play through the full gameplay loop without creating a build:
+
+![image](https://user-images.githubusercontent.com/63937648/224168571-da4cc764-3ad9-4d2f-b4b8-5977f72db051.png)  
+
+After the Menu scene is open, just press play at the top of the inspector!
+
 
 ## Building the Project  
 
