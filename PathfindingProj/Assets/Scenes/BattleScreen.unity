@@ -341,6 +341,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1006500693}
     - target: {fileID: 2797347245119112009, guid: 261cc44c0fcfd234a8dfa39d662f2f0c, type: 3}
+      propertyPath: defeatClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0159c86c18822f44d97f034012aad93f, type: 3}
+    - target: {fileID: 2797347245119112009, guid: 261cc44c0fcfd234a8dfa39d662f2f0c, type: 3}
+      propertyPath: victoryClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0b387f09e6bd67b45b19991aef2dc685, type: 3}
+    - target: {fileID: 2797347245119112009, guid: 261cc44c0fcfd234a8dfa39d662f2f0c, type: 3}
       propertyPath: buttonSource
       value: 
       objectReference: {fileID: 2048059173}

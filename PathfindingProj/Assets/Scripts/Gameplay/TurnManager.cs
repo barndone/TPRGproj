@@ -23,7 +23,8 @@ public class TurnManager : MonoBehaviour
 
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip musicIntro;
-    [SerializeField] AudioClip musicEnd;
+    [SerializeField] AudioClip victoryClip;
+    [SerializeField] AudioClip defeatClip;
 
     //  method called at the start of every turn, makes sure if it is the player turn, enemies can't be selected
     //  and vice versa
@@ -173,7 +174,7 @@ public class TurnManager : MonoBehaviour
     {
             //  the player has won!
             //  queue victory fanfare!
-        StartCoroutine(DelayedLoad(musicEnd, 4));
+        StartCoroutine(DelayedLoad(victoryClip, 4));
     }
 
     //  Called at the end of every freame to see if the defeat condition is met:
@@ -182,7 +183,7 @@ public class TurnManager : MonoBehaviour
     {
             //  the player has lost...
             //  queue sad trombone :(
-        StartCoroutine(DelayedLoad(musicEnd, 3));
+        StartCoroutine(DelayedLoad(defeatClip, 3));
     }
 
     //Delayed load for a scene with parameters for an audio clip, and a scene index
