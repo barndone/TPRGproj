@@ -87,6 +87,8 @@ public class Unit : MonoBehaviour
 
     //  check if a unit is dead
     public bool IsDead { get { return curHealth <= 0; } }
+
+    private bool gravestone = false;
     //  accessor for the max health
     public int MaxHealth { get { return maxHealth; } }
     //  accessor for the attack
@@ -161,6 +163,12 @@ public class Unit : MonoBehaviour
 
                     if (hasPath)
                     {
+                        /*
+                        if (!acting)
+                        {
+                            gridManager.ResolveTileCollision(pathToMove);
+                        }*/
+
                         acting = true;
 
                         gridManager.HideAccessibleTiles(this, accessibleTiles);
@@ -374,33 +382,65 @@ public class Unit : MonoBehaviour
         //  otherwise, no color change
         else { sprite.color = Color.white; }
 
-        //  if the unit is dead
-        if (IsDead)
-        {
-            //  we dead
-            audioSource.PlayOneShot(deathSound);
-            //  remove this unit from the party (since it's dead)
-            partyManager.party.Remove(this);
-            
-            //  if this unit is not an ally
-            if (!ally)
+        //  if this unit is NOT currently a gravestone:
+        if (!gravestone)
+        {        
+            //  check if our health is <= 0
+            if (IsDead)
             {
-                //  cache the computerController ref
-                ComputerController cpu = partyManager.GetComponent<ComputerController>();
+                //  play our death sound!
+                audioSource.PlayOneShot(deathSound);
+                //  remove this unit from the party (since it's dead)
+                partyManager.party.Remove(this);
+                
+                //  if this unit is not an ally
+                if (!ally)
+                {
+                    //  cache the computerController ref
+                    ComputerController cpu = partyManager.GetComponent<ComputerController>();
 
-                //  remove this units decision ref from the decisionRoots list
-                cpu.decisionRoots.Remove(this.unitDecisionRef);
+                    //  remove this units decision ref from the decisionRoots list
+                    cpu.decisionRoots.Remove(this.unitDecisionRef);
+                }
+
+                //  swap the sprite to the gravestone
+                sprite.sprite = deadSprite;
+                this.selectable = false;
+                animator.enabled = false;
+
+                //  mark that it is now a gravestone (to avoid calling this code a second time!)
+                gravestone = true;
+
+                //  clean up tile references
+
+                this.currentTile.Occupied = false;
+                this.currentTile.Obstacle = true;
+                this.currentTile.occupyingUnit = null;
+                this.currentTile = null;
+
+                //  if this unit is an ally
+                if (this.ally)
+                {
+                    //  check the size of the party
+                    if (this.partyManager.party.Count == 0)
+                    {
+                        //  if the party is empty, we have lost
+                        turnManager.DefeatCondition();
+                    }
+                }
+                //  otherwise it is an enemy
+                else
+                {
+                    //  check the size of the party
+                    if (this.partyManager.party.Count == 0)
+                    {
+                        //  if the party is empty, we have won
+                        turnManager.VictoryCondition();
+                    }
+                }
             }
-
-            sprite.sprite = deadSprite;
-            this.selectable = false;
-            animator.enabled = false;
-
-            this.currentTile.Occupied = false;
-            this.currentTile.Obstacle = true;
-            this.currentTile.occupyingUnit = null;
-            this.currentTile = null;
         }
+
     }
 
     protected void OnMouseEnter()

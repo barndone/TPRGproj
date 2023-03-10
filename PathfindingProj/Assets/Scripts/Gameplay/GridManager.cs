@@ -878,9 +878,21 @@ public class GridManager : MonoBehaviour
                         //  check if that tile is not occupied or an obstacle
                         if (!North.Obstacle)
                         {
-                            North.prevTile = Current;
-                            //  if not, add to the tiles to process
-                            tilesToProcess.Enqueue(North);
+                            if (North.Occupied)
+                            {
+                                if (North.occupyingUnit == activeUnit.target)
+                                {
+                                    North.prevTile = Current;
+                                    //  if not, add to the tiles to process
+                                    tilesToProcess.Enqueue(North);
+                                }
+                            }
+                            else
+                            {
+                                North.prevTile = Current;
+                                //  if not, add to the tiles to process
+                                tilesToProcess.Enqueue(North);
+                            }
                         }
                     }
                 }
@@ -905,9 +917,21 @@ public class GridManager : MonoBehaviour
                         //  check if that tile is not occupied or an obstacle
                         if (!East.Obstacle)
                         {
-                            East.prevTile = Current;
-                            //  if not, add to the tiles to process
-                            tilesToProcess.Enqueue(East);
+                            if (East.Occupied)
+                            {
+                                if (East.occupyingUnit == activeUnit.target)
+                                {
+                                    East.prevTile = Current;
+                                    //  if not, add to the tiles to process
+                                    tilesToProcess.Enqueue(East);
+                                }
+                            }
+                            else
+                            {
+                                East.prevTile = Current;
+                                //  if not, add to the tiles to process
+                                tilesToProcess.Enqueue(East);
+                            }
                         }
                     }
                 }
@@ -932,9 +956,21 @@ public class GridManager : MonoBehaviour
                         //  check if that tile is not occupied or an obstacle
                         if (!South.Obstacle)
                         {
-                            South.prevTile = Current;
-                            //  if not, add to the tiles to process
-                            tilesToProcess.Enqueue(South);
+                            if (South.Occupied)
+                            {
+                                if (South.occupyingUnit == activeUnit.target)
+                                {
+                                    South.prevTile = Current;
+                                    //  if not, add to the tiles to process
+                                    tilesToProcess.Enqueue(South);
+                                }
+                            }
+                            else
+                            {
+                                South.prevTile = Current;
+                                //  if not, add to the tiles to process
+                                tilesToProcess.Enqueue(South);
+                            }
                         }
                     }
                 }
@@ -959,9 +995,21 @@ public class GridManager : MonoBehaviour
                         //  check if that tile is not occupied or an obstacle
                         if (!West.Obstacle)
                         {
-                            West.prevTile = Current;
-                            //  if not, add to the tiles to process
-                            tilesToProcess.Enqueue(West);
+                            if (West.Occupied)
+                            {
+                                if (West.occupyingUnit == activeUnit.target)
+                                {
+                                    West.prevTile = Current;
+                                    //  if not, add to the tiles to process
+                                    tilesToProcess.Enqueue(West);
+                                }
+                            }
+                            else
+                            {
+                                West.prevTile = Current;
+                                //  if not, add to the tiles to process
+                                tilesToProcess.Enqueue(West);
+                            }
                         }
                     }
                 }
@@ -971,6 +1019,7 @@ public class GridManager : MonoBehaviour
 
             //  Add the position of the current tile to the processedTilePositions list and pop it from the queue
             processedTilePositions.Add(tilesToProcess.Dequeue().MapPos);
+
             //  sort the queue according to our F-score
             tilesToProcess = new Queue<Tile>(tilesToProcess.OrderBy(x => x.curScore));
 
@@ -1035,4 +1084,37 @@ public class GridManager : MonoBehaviour
             tile.prevColor = tile.defaultColor;
         }
     }
+
+    /*
+    public void ResolveTileCollision(List<Vector2> path)
+    {
+        Tile dest = map[path[path.Count - 1]];
+
+        List<Tile> accessible = new List<Tile>();
+        //  if the tile at the position at the end of the path is occupied:
+        if (dest.Occupied)
+        {
+            activeUnit.hasActed = true;
+            ShowAccessibleTiles(activeUnit, out accessible);
+            //  iterate through the accessible tiles of the active unit
+            foreach (Tile tiles in accessible)
+            {
+                //  if that tile isn't occupied
+                if (!tiles.Occupied)
+                {
+                    //  compare the hScore of the dest to the tile we are looking at
+                    if (tiles.hScore == dest.hScore)
+                    {
+
+                        //  replace the destination with the tile with equivalent hScore
+                        dest = tiles;
+                    }
+                }
+            }
+            //  re-assign end position to new dest
+            path[path.Count - 1] = dest.MapPos;
+            HideAccessibleTiles(activeUnit, accessible);
+            activeUnit.hasActed = false;
+        }
+    }*/
 }

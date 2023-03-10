@@ -33,6 +33,10 @@ public class EnemyInRangeDecision : IDecision
         //  if there is not a target:
         if (agent.target == null)
         {
+            if (enemies.Count == 0)
+            {
+                return null;
+            }
             //  iterate through the list of allies
             foreach (Unit unit in enemies)
             {

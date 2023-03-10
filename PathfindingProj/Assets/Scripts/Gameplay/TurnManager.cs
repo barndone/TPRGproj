@@ -169,9 +169,8 @@ public class TurnManager : MonoBehaviour
 
     //  Called at the end of every frame to see if the victory condition is met
     //      all enemies defeated? hell yeah brother
-    void VictoryCondition()
+    public void VictoryCondition()
     {
-
             //  the player has won!
             //  queue victory fanfare!
         StartCoroutine(DelayedLoad(musicEnd, 4));
@@ -179,7 +178,7 @@ public class TurnManager : MonoBehaviour
 
     //  Called at the end of every freame to see if the defeat condition is met:
     //      all units defeated? hell no brother
-    void DefeatCondition()
+    public void DefeatCondition()
     {
             //  the player has lost...
             //  queue sad trombone :(
@@ -191,7 +190,6 @@ public class TurnManager : MonoBehaviour
     {
         if (!shouldExit)
         {
-
             shouldExit = true;
 
             audioSource.Stop();
