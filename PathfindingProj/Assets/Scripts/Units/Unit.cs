@@ -571,41 +571,56 @@ public class Unit : MonoBehaviour
     //  functionality for attacking
     public void Attacking(Tile targetTile) 
     {
-        //  check if it is a valid tile to attack
-        if (ValidTile(targetTile.MapPos))
+        if (!hasActed)
         {
-            //  does that tile actually have a unit on it?
-            if (targetTile.occupyingUnit != null)
+            //  check if it is a valid tile to attack
+            if (ValidTile(targetTile.MapPos))
             {
-                Unit other = targetTile.occupyingUnit;
-
-                //  check if that unit is an enemy
-                if (this.ally != other.ally)
+                //  does that tile actually have a unit on it?
+                if (targetTile.occupyingUnit != null)
                 {
-                    //  time to attack!
-                    other.CurHealth -= (this.Attack - other.Defence);
-                    this.hasAction = false;
-                    this.hasActed = true;
-                    StartCoroutine(PlayRandomAttackAndDamageSounds(other));
+                    Unit other = targetTile.occupyingUnit;
 
-                    Debug.Log("Attacking " + other + ", current health: " + other.curHealth);
+                    //  check if that unit is an enemy
+                    if (this.ally != other.ally)
+                    {
+                        //  time to attack!
+                        other.CurHealth -= (this.Attack - other.Defence);
+                        this.hasAction = false;
+                        this.hasActed = true;
+                        StartCoroutine(PlayRandomAttackAndDamageSounds(other));
+
+                        Debug.Log("Attacking " + other + ", current health: " + other.curHealth);
+
+                        gridManager.HideAccessibleTiles(this, accessibleTiles);
+                    }
+
+                    else
+                    {
+                        this.hasAction = false;
+                        this.hasActed = false;
+                        Debug.Log("Target tile occupied by ally");
+                    }
+
                 }
 
                 else
                 {
                     this.hasAction = false;
                     this.hasActed = false;
-                    Debug.Log("Target tile occupied by ally");
+                    Debug.Log("Target tile empty");
                 }
-
             }
+        }
 
-            else
+        //  once the unit has acted:
+        if (hasActed)
+        {
+            if (hasMoved)
             {
-                this.hasAction = false;
-                this.hasActed = false;
-                Debug.Log("Target tile empty");
+                EndOfUnitActions();
             }
+
         }
     }
     //  functionality for their skill
