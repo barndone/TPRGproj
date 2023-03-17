@@ -451,56 +451,68 @@ public class Unit : MonoBehaviour
         //  if LMB is pressed while hovering over this unit:
         if (Input.GetMouseButtonDown(0))
         {
-            //  check if this unit is on an ally
-            //  AND it is your turn
-            if (turnManager.playerTurn && ally)
-            {
+
                 //  then we can do the song and dance
                 //  check if we can make this the active unit:
                 if (gridManager.activeUnit == null)
                 {
-                    //  check if the unit has not taken its actions
-                    if (!waiting)
+                    //  check if this unit is on an ally
+                    //  AND it is your turn
+                    if (turnManager.playerTurn && ally)
                     {
-                        //  then we can go through the selection process!
-                        //  swap whether it was selected
-
-
-                        isSelected = !isSelected;
-                        //  update the selected animation depending on isSelected being T/F
-                        animator.SetBool("selected", isSelected);
-
-                        //  if the unit is now selected
-                        if (isSelected)
+                        //  check if the unit has not taken its actions
+                        if (!waiting)
                         {
-                            //  pass that this is the active unit to the grid manager
-                            gridManager.activeUnit = this;
-                            //  and the unit controller
-                            partyManager.activeUnit = this;
-                            //  and the ui controller
-                            uiController.unitSelected = isSelected;
+                            //  then we can go through the selection process!
+                            //  swap whether it was selected
 
-                            uFrame.SetHealthText(curHealth, maxHealth);
-                            uFrame.SetAtkText(Attack);
-                            uFrame.SetDefText(Defence);
 
-                        }
-                        //  otherwise, they were unselected
-                        else
-                        {
-                            //  hide movement options
-                            gridManager.HideAccessibleTiles(this, accessibleTiles);
-                            //  mark that no unit is active
-                            gridManager.activeUnit = null;
-                            //  and the unit controller
-                            partyManager.activeUnit = null;
-                            //  clear the accessible tiles list
-                            accessibleTiles.Clear();
-                            uiController.unitSelected = isSelected;
+                            isSelected = !isSelected;
+                            //  update the selected animation depending on isSelected being T/F
+                            animator.SetBool("selected", isSelected);
+
+                            //  if the unit is now selected
+                            if (isSelected)
+                            {
+                                //  pass that this is the active unit to the grid manager
+                                gridManager.activeUnit = this;
+                                //  and the unit controller
+                                partyManager.activeUnit = this;
+                                //  and the ui controller
+                                uiController.unitSelected = isSelected;
+
+                                uFrame.SetHealthText(curHealth, maxHealth);
+                                uFrame.SetAtkText(Attack);
+                                uFrame.SetDefText(Defence);
+                            }
                         }
                     }
                 }
-            }
+
+                //  otherwise, we have an active unit and should check for actions
+                else
+                {
+                    //  cache the active unit
+                    Unit activeUnit = gridManager.activeUnit;
+
+                    //  check if THIS unit occupies a tile that the active unit can interact with
+                    if (activeUnit.ValidTile(this.mapPosition))
+                    {
+                        if (activeUnit.uiController.attackWish)
+                        {
+                            activeUnit.hasAction = true;
+                            activeUnit.Attacking(this.currentTile);
+                        }
+
+                        else if (activeUnit.uiController.skillWish)
+                        {
+                            activeUnit.hasAction = true;
+                            activeUnit.Skill(this.currentTile);
+                        } 
+                            
+                    }
+                }
+            
             //  otherwise, do nothing
         }
     }
@@ -591,8 +603,6 @@ public class Unit : MonoBehaviour
                         StartCoroutine(PlayRandomAttackAndDamageSounds(other));
 
                         Debug.Log("Attacking " + other + ", current health: " + other.curHealth);
-
-                        gridManager.HideAccessibleTiles(this, accessibleTiles);
                     }
 
                     else
@@ -610,6 +620,8 @@ public class Unit : MonoBehaviour
                     this.hasActed = false;
                     Debug.Log("Target tile empty");
                 }
+
+                gridManager.HideAccessibleTiles(this, accessibleTiles);
             }
         }
 
@@ -641,5 +653,29 @@ public class Unit : MonoBehaviour
         var randomDamageSound = other.dmgTaken[Random.Range(0, dmgTaken.Length)];
         //  play that random sound
         other.audioSource.PlayOneShot(randomDamageSound);
+    }
+
+    
+    private void LateUpdate()
+    {
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            if (this.isSelected)
+            {
+                isSelected = false;
+                //  update the selected animation depending on isSelected being T/F
+                animator.SetBool("selected", isSelected);
+
+                //  hide movement options
+                gridManager.HideAccessibleTiles(this, accessibleTiles);
+                //  mark that no unit is active
+                gridManager.activeUnit = null;
+                //  and the unit controller
+                partyManager.activeUnit = null;
+                //  clear the accessible tiles list
+                accessibleTiles.Clear();
+                uiController.unitSelected = isSelected;
+            }
+        }
     }
 }
