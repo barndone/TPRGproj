@@ -8,13 +8,14 @@ public class BaseController : MonoBehaviour
 
     [SerializeField] protected TurnManager TurnManager;
     [SerializeField] protected UIController uiCon;
+    [SerializeField] protected GridManager gridManager;
 
     public bool noMoreActions = false;
 
     public Unit activeUnit
     {
-        get => party[0].gridManager.activeUnit;
-        set => party[0].gridManager.activeUnit = value;
+        get => gridManager.activeUnit;
+        set => gridManager.activeUnit = value;
     }
 
     private void Update()

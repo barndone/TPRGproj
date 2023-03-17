@@ -39,6 +39,8 @@ public class Warrior : Unit
                         other.mapPosition = initialPos;
                         //  reduce the other unit's health by 1
                         other.CurHealth--;
+                        this.dmgDone_val++;
+                        other.dmgTaken_val--;
                     }
                     //  if the tile is occupied:
                     else if (gridManager.map[other.mapPosition].Occupied)
@@ -47,11 +49,15 @@ public class Warrior : Unit
                         Unit collided = gridManager.map[other.mapPosition].occupyingUnit;
                         //  reduce the health of the collided with unit by 1
                         collided.CurHealth--;
+                        this.dmgDone_val++;
+                        collided.dmgTaken_val--;
 
                         //  return the other unit to its original position
                         other.mapPosition = initialPos;
                         //  reduce the other unit's health by 1
                         other.CurHealth--;
+                        this.dmgDone_val++;
+                        other.dmgTaken_val--;
                     }
                     else if (gridManager.map[other.mapPosition].Obstacle)
                     {
@@ -59,6 +65,8 @@ public class Warrior : Unit
                         other.mapPosition = initialPos;
                         //  reduce the other unit's health by 1
                         other.CurHealth--;
+                        this.dmgDone_val++;
+                        other.dmgTaken_val--;
                     }
 
                     //  find a random damage taken sound

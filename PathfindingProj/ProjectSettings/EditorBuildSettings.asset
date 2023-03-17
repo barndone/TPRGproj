@@ -15,9 +15,6 @@ EditorBuildSettings:
     path: Assets/Scenes/BattleScreen.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
-    path: Assets/Scenes/testSceneFailState.unity
-    guid: 755fd996ae7a764418194aacfd0ba5ee
-  - enabled: 1
-    path: Assets/Scenes/testSceneWinState.unity
-    guid: c361d896b58ac3340afc11ed5ee69e44
+    path: Assets/Scenes/EndOfBattleScreen.unity
+    guid: e09f430886645a54eaaa44ad6f49bb11
   m_configObjects: {}

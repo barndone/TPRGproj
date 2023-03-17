@@ -38,16 +38,16 @@ public class EnemyInRangeDecision : IDecision
                 return null;
             }
 
-            //  used for keeping track of how many units are impossible to reach
-            int impossibleMoveCount = 0;
-
             //  iterate through the list of allies
             foreach (Unit unit in enemies)
             {
                 //  if there is no target:
                 if (agent.target == null)
                 {
-                    agent.target = unit;
+                    if (!unit.IsDead)
+                    {
+                        agent.target = unit;
+                    }
                 }
                 //  otherwise, we have a target:
                 else
@@ -59,29 +59,41 @@ public class EnemyInRangeDecision : IDecision
                         < CoordinateUtils.CalcManhattanDistance(agent.mapPosition, agent.target.mapPosition)
                         && unit.Defence <= agent.target.Defence)
                     {
-                        agent.target = unit;
+                        if (!unit.IsDead && !unit.unitCantBeReached)
+                        {
+                            agent.target = unit;
+                        }
                     }
                 }
 
-                //  check if this target can even be reached
-                if (agent.target.unitCantBeReached)
+                if (agent.target != null)
                 {
-                    agent.target = null;
-                    impossibleMoveCount++;
+                    //  check if this target can even be reached
+                    if (agent.target.unitCantBeReached)
+                    {
+                        //  if for some reason it can't be reached but we are adjacent to it
+                        if (agent.target.AdjacentTiles.Contains(agent.currentTile))
+                        {
+                            //  then we don't have to do anything! this is our target!
+                        }
+
+                        else
+                        {
+                            agent.target = null;
+                        }
+                    }
                 }
-            }
-
-            //  if the amount of impossible moves is equal to the number of enemies
-            if (impossibleMoveCount == enemies.Count)
-            {
-                //  we do not have anything to target, mark wait wish
-                agent.uiController.waitWish = true;
-
-                //  exit this decision
-                return null;
             }
         }
 
+        //  if after searching for a target, it is still null:
+        if (agent.target == null)
+        {
+            //  wait since we can't do anything
+            agent.uiController.waitWish = true;
+        }
+
+        //  otherwise, we found a target:
         if (agent.target != null)
         {
             //  if the agent can reach its target

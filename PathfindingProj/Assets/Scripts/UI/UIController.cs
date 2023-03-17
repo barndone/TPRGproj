@@ -27,6 +27,12 @@ public class UIController : MonoBehaviour
     public bool cancelWish = false;
     public bool endTurnWish = false;
 
+    Button moveButton;
+    Button attackButton;
+    Button skillButton;
+
+    [SerializeField] Button endTurnButton;
+
     void Start()
     {
         foreach(GameObject button in unitButtons)
@@ -39,6 +45,19 @@ public class UIController : MonoBehaviour
 
         TurnManager = FindObjectOfType<TurnManager>();
         gridManager = FindObjectOfType<GridManager>();
+
+        /*
+        *    UnitButtons List:
+        *    0 - attack button
+        *    1 - skill button
+        *    2 - wait button
+        *    3 - cancel button
+        *    4 - move button
+        */
+
+        moveButton = unitButtons[4].GetComponent<Button>();
+        attackButton = unitButtons[0].GetComponent<Button>();
+        skillButton = unitButtons[1].GetComponent<Button>();
     }
 
     private void LateUpdate()
@@ -81,43 +100,43 @@ public class UIController : MonoBehaviour
             Time.timeScale = 15;
         }
 
-        /*
-         * UnitButtons List:
-         * 0 - attack button
-         * 1 - skill button
-         * 2 - wait button
-         * 3 - cancel button
-         * 4 - move button
-         */
+
 
         //  if there is an active unit--
         if (gridManager.activeUnit != null)
         {
+
+            endTurnButton.interactable = false;
             //  cache the active unit
             Unit activeUnit = gridManager.activeUnit;
 
             switch (!activeUnit.hasMoved)
             {
                 case false:
-                    unitButtons[4].GetComponent<Button>().interactable = false;
+                    moveButton.interactable = false;
                     break;
                 case true:
-                    unitButtons[4].GetComponent<Button>().interactable = true;
+                    moveButton.interactable = true;
                     break;
             }
 
             switch (!activeUnit.hasActed)
             {
                 case false:
-                    unitButtons[0].GetComponent<Button>().interactable = false;
-                    unitButtons[1].GetComponent<Button>().interactable = false;
+                    attackButton.interactable = false;
+                    skillButton.interactable = false;
                     break;
 
                 case true:
-                    unitButtons[0].GetComponent<Button>().interactable = true;
-                    unitButtons[1].GetComponent<Button>().interactable = true;
+                    attackButton.interactable = true;
+                    skillButton.interactable = true;
                     break;
             }
+        }
+
+        else
+        {
+            endTurnButton.interactable = true;
         }
     }
 

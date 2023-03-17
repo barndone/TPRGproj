@@ -133,16 +133,49 @@ public class TurnManager : MonoBehaviour
 
     void Update()
     {
-        //  are all enemies defeated?
-        if (cpu.party.Count == 0)
+        int counter = 0;
+
+        //  check each unit in the cpu party
+        foreach(Unit unit in cpu.party)
         {
+            //  if its dead
+            if (unit.IsDead)
+            {
+                //  increment the counter
+                counter++;
+            }
+        }
+
+        //  if the counter is equal to the number in the party
+        if (counter == cpu.party.Count)
+        {
+            //  victory, all enemies defeated
             VictoryCondition();
+
         }
-        //  are all allies defeated?
-        else if (player.party.Count == 0)
+        //  reset counter
+        counter = 0;
+
+        //  check each unit in the player party
+        foreach (Unit unit in player.party)
         {
-            DefeatCondition();
+            //  if it's dead
+            if (unit.IsDead)
+            {
+                //  increment the counter
+                counter++;
+            }
         }
+
+        //  if the counter is equal to the number in the party
+        if (counter == player.party.Count)
+        {
+            //  defeat
+            DefeatCondition();
+
+        }
+
+        //  otherwise, we do not have to end, check for if the turn should end
         else
         {
             //  if there are no more actions the CPU could take AND it is NOT currently the player's turn
@@ -172,17 +205,21 @@ public class TurnManager : MonoBehaviour
     //      all enemies defeated? hell yeah brother
     public void VictoryCondition()
     {
-            //  the player has won!
-            //  queue victory fanfare!
-        StartCoroutine(DelayedLoad(victoryClip, 4));
+        //  the player has won!
+        //  queue victory fanfare!
+
+        SaveSystem.instance.SaveStats();
+        StartCoroutine(DelayedLoad(victoryClip, 3));
     }
 
     //  Called at the end of every freame to see if the defeat condition is met:
     //      all units defeated? hell no brother
     public void DefeatCondition()
     {
-            //  the player has lost...
-            //  queue sad trombone :(
+        //  the player has lost...
+        //  queue sad trombone :(
+
+        SaveSystem.instance.SaveStats();
         StartCoroutine(DelayedLoad(defeatClip, 3));
     }
 

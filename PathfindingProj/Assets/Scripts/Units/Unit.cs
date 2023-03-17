@@ -105,14 +105,15 @@ public class Unit : MonoBehaviour
     //  accessor for the defence
     public int Defence { get { return defence; } }
 
+    //  
+
+    public int dmgDone_val;
+    public int dmgTaken_val;
+    public int healingDone_val;
+    public int healingTaken_val;
+
     //  which direction this unit is facing
-    public enum direction
-    {
-        north,
-        east,
-        south,
-        west
-    }
+    public List<Tile> AdjacentTiles = new List<Tile>();
 
     [SerializeField] public AudioSource audioSource;
 
@@ -377,9 +378,7 @@ public class Unit : MonoBehaviour
             {
                 //  play our death sound!
                 audioSource.PlayOneShot(deathSound);
-                //  remove this unit from the party (since it's dead)
-                partyManager.party.Remove(this);
-                
+
                 //  if this unit is not an ally
                 if (!ally)
                 {
@@ -404,25 +403,52 @@ public class Unit : MonoBehaviour
                 this.currentTile.Obstacle = false;
                 this.currentTile.occupyingUnit = null;
                 this.currentTile = null;
+                
+                //
+                int counter = 0;
 
                 //  if this unit is an ally
                 if (this.ally)
                 {
-                    //  check the size of the party
-                    if (this.partyManager.party.Count == 0)
+                    //  check each unit in the party
+                    foreach (Unit unit in this.partyManager.party)
                     {
-                        //  if the party is empty, we have lost
+                        //  if its dead
+                        if (unit.IsDead)
+                        {
+                            //  increment the counter
+                            counter++;
+                        }
+                    }
+
+                    //  if the counter is equal to the number in the party
+                    if (counter == this.partyManager.party.Count)
+                    {
+                        //  defeat, party defeated
                         turnManager.DefeatCondition();
+
                     }
                 }
                 //  otherwise it is an enemy
                 else
                 {
-                    //  check the size of the party
-                    if (this.partyManager.party.Count == 0)
+                    //  check each unit in the cpu party
+                    foreach (Unit unit in this.partyManager.party)
                     {
-                        //  if the party is empty, we have won
+                        //  if its dead
+                        if (unit.IsDead)
+                        {
+                            //  increment the counter
+                            counter++;
+                        }
+                    }
+
+                    //  if the counter is equal to the number in the party
+                    if (counter == this.partyManager.party.Count)
+                    {
+                        //  victory, all enemies defeated
                         turnManager.VictoryCondition();
+
                     }
                 }
             }
@@ -617,8 +643,12 @@ public class Unit : MonoBehaviour
                     //  check if that unit is an enemy
                     if (this.ally != other.ally)
                     {
+                        int damage = (this.Attack - other.Defence);
                         //  time to attack!
-                        other.CurHealth -= (this.Attack - other.Defence);
+                        other.CurHealth -= damage;
+                        this.dmgDone_val += damage;
+                        other.dmgTaken_val += damage;
+
                         this.hasAction = false;
                         this.hasActed = true;
                         StartCoroutine(PlayRandomAttackAndDamageSounds(other));
@@ -695,6 +725,37 @@ public class Unit : MonoBehaviour
                 accessibleTiles.Clear();
                 uiController.unitSelected = isSelected;
             }
+        }
+
+        if (!this.IsDead)
+        {
+            this.PopulateAdjacentTiles();
+        }
+    }
+
+
+    private void PopulateAdjacentTiles()
+    {
+        AdjacentTiles.Clear();
+
+        if (currentTile.hasNorth())
+        {
+            AdjacentTiles.Add(currentTile.North);
+        }
+
+        if (currentTile.hasEast())
+        {
+            AdjacentTiles.Add(currentTile.East);
+        }
+
+        if (currentTile.hasSouth())
+        {
+            AdjacentTiles.Add(currentTile.South);
+        }
+
+        if (currentTile.hasWest())
+        {
+            AdjacentTiles.Add(currentTile.West);
         }
     }
 }
