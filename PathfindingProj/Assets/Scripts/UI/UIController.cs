@@ -8,6 +8,7 @@ public class UIController : MonoBehaviour
     //  List of all buttons for controlling a unit
     [SerializeField] List<GameObject> unitButtons = new List<GameObject>();
     [SerializeField] public GameObject unitFrame;
+    [SerializeField] public GameObject targetFrame;
     [SerializeField] Text turnTracker;
     [SerializeField] TurnManager TurnManager;
 
@@ -32,6 +33,7 @@ public class UIController : MonoBehaviour
         }
 
         unitFrame.SetActive(false);
+        targetFrame.SetActive(false);
 
         TurnManager = FindObjectOfType<TurnManager>();
     }
@@ -48,8 +50,6 @@ public class UIController : MonoBehaviour
                 {
                     button.SetActive(false);
                 }
-                //  set the unit frame to inactive
-                unitFrame.SetActive(false);
                 break;
             //  if true:
             case true:
@@ -58,8 +58,6 @@ public class UIController : MonoBehaviour
                 {
                     button.SetActive(true);
                 }
-                //  set the unit frame to active
-                unitFrame.SetActive(true);
                 break;
         }
 

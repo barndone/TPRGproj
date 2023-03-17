@@ -185,12 +185,16 @@ MonoBehaviour:
   pathToMove: []
   sprite: {fileID: 2879690127980965610}
   deadSprite: {fileID: -4582171896946982042, guid: aa0275af32bb1d3408b227f0e436e256, type: 3}
+  unitID: 4
   hasPath: 0
   hasMoved: 0
   hasActed: 0
   hasAction: 0
+  acting: 0
   waiting: 0
   selectable: 1
+  canAttackAdjacent: 1
+  unitCantBeReached: 0
   atkRange: 1
   skillRange: 1
   maxMove: 3
@@ -215,3 +219,5 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 69248d65756466549ae94f7721522333, type: 3}
   - {fileID: 8300000, guid: 3f37773930b57d943a9bc3046f4fbab1, type: 3}
   deathSound: {fileID: 8300000, guid: 0b387f09e6bd67b45b19991aef2dc685, type: 3}
+  canHeal: 0
+  target: {fileID: 0}

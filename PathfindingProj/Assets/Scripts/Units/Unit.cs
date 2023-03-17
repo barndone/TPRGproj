@@ -19,7 +19,8 @@ public class Unit : MonoBehaviour
     [SerializeField] public TurnManager turnManager;
     [SerializeField] public BaseController partyManager;
 
-    UnitFrame uFrame;
+    UnitFrame playerFrame;
+    UnitFrame targetFrame;
 
     //  flag for if the unit is selected
     [SerializeField] public bool isSelected;
@@ -38,6 +39,8 @@ public class Unit : MonoBehaviour
 
     [SerializeField] private SpriteRenderer sprite;
     [SerializeField] public Sprite deadSprite;
+
+    public int unitID;
 
 
     //  flag for if the unit has a path
@@ -134,7 +137,8 @@ public class Unit : MonoBehaviour
         gridManager = FindObjectOfType<GridManager>();
         uiController = FindObjectOfType<UIController>();
         audioSource = FindObjectOfType<AudioSource>();
-        uFrame = uiController.unitFrame.GetComponent<UnitFrame>();
+        playerFrame = uiController.unitFrame.GetComponent<UnitFrame>();
+        targetFrame = uiController.targetFrame.GetComponent<UnitFrame>();
 
         //  assign the current tile
         currentTile = gridManager.map[mapPosition];
@@ -170,11 +174,6 @@ public class Unit : MonoBehaviour
 
                     if (hasPath)
                     {
-                        /*
-                        if (!acting)
-                        {
-                            gridManager.ResolveTileCollision(pathToMove);
-                        }*/
 
                         acting = true;
 
@@ -435,7 +434,19 @@ public class Unit : MonoBehaviour
         //  on mouse entering the collider of this unit:
         //  begin highlighted animation
         animator.SetBool("highlighted", true);
-        MOTooltip();
+
+        //  if no unit is selected, update/show the "player" frame on entering collider
+        if (gridManager.activeUnit == null)
+        {
+            uiController.unitFrame.SetActive(true);
+            playerFrame.UpdateUnitFrame(this);
+        }
+        //  otherwise, update/show the "target" frame on entering collider
+        else
+        {
+            uiController.targetFrame.SetActive(true);
+            targetFrame.UpdateUnitFrame(this);
+        }
     }
 
     protected void OnMouseExit()
@@ -443,7 +454,19 @@ public class Unit : MonoBehaviour
         //  on mouse exiting the collider of this unit:
         //  stop the highlighted animation
         animator.SetBool("highlighted", false);
-        Tooltip.HideTooltip_Static();
+
+        //  if no unit is selected, hide the unit frame on mouse leaving collider
+        if (gridManager.activeUnit == null)
+        {
+            uiController.unitFrame.SetActive(false);
+            playerFrame.target = null;
+        }
+        //  otherwise, hide the "target" frame on leaving collider
+        else
+        {
+            uiController.targetFrame.SetActive(false);
+            targetFrame.target = null;
+        }
     }
 
     protected void OnMouseOver()
@@ -481,9 +504,7 @@ public class Unit : MonoBehaviour
                                 //  and the ui controller
                                 uiController.unitSelected = isSelected;
 
-                                uFrame.SetHealthText(curHealth, maxHealth);
-                                uFrame.SetAtkText(Attack);
-                                uFrame.SetDefText(Defence);
+                            playerFrame.UpdateUnitFrame(this);
                             }
                         }
                     }
@@ -637,8 +658,6 @@ public class Unit : MonoBehaviour
     }
     //  functionality for their skill
     public virtual void Skill(Tile targetTile) { /* Intentionally left blank - to be implemented in derived classes */ }
-
-    public virtual void MOTooltip() { /* intentionally left blank - to be implemented in derived classes */ }
 
     //  Play the intro to the scene track before starting to play the loopable part of the track
     IEnumerator PlayRandomAttackAndDamageSounds(Unit other)
