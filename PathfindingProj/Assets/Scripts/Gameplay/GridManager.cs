@@ -153,7 +153,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    //  Method for showing which tiles on the grid a given unit is able to access
+    //  Method for showing which tiles on the grid a given unit is able to access INCLUDING attack range
     public void ShowAccessibleTiles(Unit movingUnit, out List<Tile> accessibleTiles)
     {
         //  current tiles moved in relation to MaxMove
@@ -184,13 +184,6 @@ public class GridManager : MonoBehaviour
         {
             //  add the attack range to the accessibleTiles range
             range += movingUnit.AttackRange;
-        }
-
-        //  check if there is a specific attack/skill wish
-        if (!movingUnit.hasActed && (movingUnit.uiController.attackWish || movingUnit.uiController.skillWish))
-        {
-            //  assign the range to JUST the attack range
-            range = movingUnit.AttackRange;
         }
 
         do
@@ -569,8 +562,28 @@ public class GridManager : MonoBehaviour
 
             //  assign the current tile as visited
             cur.Visited = true;
-            //  pop from the front of the queue and add it to the output list
-            accessibleTiles.Add(tilesToTraverse.Dequeue());
+
+            //  if the current tile is occupied
+            if (cur.Occupied)
+            {
+                //  if it is occupied by an ally
+                if (cur.occupyingUnit.ally == movingUnit.ally)
+                {
+                    //  it is not an accessible tile, so don't add it to the list
+                    //  just remove from the queue
+                    tilesToTraverse.Dequeue();
+                }
+                else
+                {
+                    //  pop from the front of the queue and add it to the output list
+                    accessibleTiles.Add(tilesToTraverse.Dequeue());
+                }
+            }
+            else
+            {
+                //  pop from the front of the queue and add it to the output list
+                accessibleTiles.Add(tilesToTraverse.Dequeue());
+            }
             //  break the loop if the open list is empty!
         } while (tilesToTraverse.Count != 0);
 
@@ -594,6 +607,239 @@ public class GridManager : MonoBehaviour
                 //  change the color of the tile to the actionRangeColor (default to red)
                 tile.rend.color = tile.actionRangeColor;
             }
+        }
+    }
+
+
+    //  Method for showing which tiles on the grid a given unit is able to attack!
+    //  ignores if the tile is occupied
+    public void ShowAttackableTiles(Unit attackingUnit, out List<Tile> accessibleTiles)
+    {
+        //  list of accessible tiles (closed)
+        accessibleTiles = new List<Tile>();
+
+        //  queue for containing the valid tiles within range of this unit
+        Queue<Tile> tilesToTraverse = new Queue<Tile>();
+
+        //  push the current tile to the front of the queue to begin iteration
+        tilesToTraverse.Enqueue(attackingUnit.currentTile);
+
+
+        //  variable for tracking how far the unit can move, attack, or use their skill
+        int range = 0;
+
+        //  traversal cost of the tiles for attacking (will always be one)
+        int traversalCost = 1;
+
+        //  if the unit has not acted
+        if (!attackingUnit.hasActed)
+        {
+            //  add the attack range to the accessibleTiles range
+            range += attackingUnit.AttackRange;
+        }
+
+        //  otherwise, we should exit
+        else
+        {
+            return;
+        }
+
+        do
+        {
+            //  cache the current tile
+            Tile cur = tilesToTraverse.Peek();
+            //  if the front tile of the queue has a valid north connection
+            if (cur.hasNorth())
+            {
+                //  cache the north tile
+                Tile north = cur.North;
+                //  check to see if the north connection has NOT been visited
+                if (!north.Visited)
+                {
+                    //  check to see if the north value is contained in the CLOSED list
+                    //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
+                    //  check if that tile is NOT an obstacle
+
+                    if (!accessibleTiles.Contains(north)
+                        && (traversalCost + cur.curScore) <= range
+                        && !north.Obstacle)
+                    {
+                        //  check if the tile we are looking at is currently in the tilesToTraverse queue
+                        if (tilesToTraverse.Contains(north))
+                        {
+                            //  if so, check if we should overwrite the score
+                            if (north.curScore > traversalCost + cur.curScore)
+                            {
+                                north.curScore = traversalCost + cur.curScore;
+                            }
+                        }
+                        else
+                        {
+                            //  update the score of the tile
+                            north.curScore += traversalCost + cur.curScore;
+
+
+
+                            //  if so, we can add it to the queue
+                            tilesToTraverse.Enqueue(north);
+                        }
+                    }
+                }
+            }
+            //  if the front tile of the queue has a valid east connection
+            if (cur.hasEast())
+            {
+                Tile east = cur.East;
+                if (!east.Visited)
+                {
+                    //  check to see if the north value is contained in the CLOSED list
+                    //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
+                    //  check if that tile is NOT an obstacle
+
+                    if (!accessibleTiles.Contains(east)
+                        && (traversalCost + cur.curScore) <= range
+                        && !east.Obstacle)
+                    {
+                        //  check if the tile we are looking at is currently in the tilesToTraverse queue
+                        if (tilesToTraverse.Contains(east))
+                        {
+                            //  if so, check if we should overwrite the score
+                            if (east.curScore > traversalCost + cur.curScore)
+                            {
+                                east.curScore = traversalCost + cur.curScore;
+                            }
+                        }
+                        else
+                        {
+                            //  update the score of the tile
+                            east.curScore += traversalCost + cur.curScore;
+
+
+
+                            //  if so, we can add it to the queue
+                            tilesToTraverse.Enqueue(east);
+                        }
+                    }
+                }
+            }
+            //  if the front tile of the queue has a valid south connection
+            if (cur.hasSouth())
+            {
+                Tile south = cur.South;
+                if (!south.Visited)
+                {
+                    //  check to see if the north value is contained in the CLOSED list
+                    //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
+                    //  check if that tile is NOT an obstacle
+
+                    if (!accessibleTiles.Contains(south)
+                        && (traversalCost + cur.curScore) <= range
+                        && !south.Obstacle)
+                    {
+                        //  check if the tile we are looking at is currently in the tilesToTraverse queue
+                        if (tilesToTraverse.Contains(south))
+                        {
+                            //  if so, check if we should overwrite the score
+                            if (south.curScore > traversalCost + cur.curScore)
+                            {
+                                south.curScore = traversalCost + cur.curScore;
+                            }
+                        }
+                        else
+                        {
+                            //  update the score of the tile
+                            south.curScore += traversalCost + cur.curScore;
+
+
+
+                            //  if so, we can add it to the queue
+                            tilesToTraverse.Enqueue(south);
+                        }
+                    }
+                }
+            }
+            //  if the front tile of the queue has a valid west connection
+            if (cur.hasWest())
+            {
+                Tile west = cur.West;
+                if (!west.Visited)
+                {
+                    //  check to see if the north value is contained in the CLOSED list
+                    //  AND check if the score of that tile plus the tile of the current score would be GREATER than max move
+                    //  check if that tile is NOT an obstacle
+
+                    if (!accessibleTiles.Contains(west)
+                        && (traversalCost + cur.curScore) <= range
+                        && !west.Obstacle)
+                    {
+                        //  check if the tile we are looking at is currently in the tilesToTraverse queue
+                        if (tilesToTraverse.Contains(west))
+                        {
+                            //  if so, check if we should overwrite the score
+                            if (west.curScore > traversalCost + cur.curScore)
+                            {
+                                west.curScore = traversalCost + cur.curScore;
+                            }
+                        }
+                        else
+                        {
+                            //  update the score of the tile
+                            west.curScore += traversalCost + cur.curScore;
+
+
+
+                            //  if so, we can add it to the queue
+                            tilesToTraverse.Enqueue(west);
+                        }
+                    }
+                }
+            }
+
+            //  assign the current tile as visited
+            cur.Visited = true;
+            //  pop from the front of the queue and add it to the output list
+            accessibleTiles.Add(tilesToTraverse.Dequeue());
+            //  break the loop if the open list is empty!
+        } while (tilesToTraverse.Count != 0);
+
+        //  if it contains the currentTile
+        if (accessibleTiles.Contains(attackingUnit.currentTile))
+        {
+            //  remove the tile occupied by this unit (since it can't attack itself!)
+            accessibleTiles.Remove(attackingUnit.currentTile);
+
+            //  if the unit cannot attack adjacent tiles (IE is a ranger)
+            if (!attackingUnit.canAttackAdjacent)
+            {
+                //  for each cardinal direction, check if it has a tile in that direction
+                if (attackingUnit.currentTile.hasNorth())
+                {
+                    accessibleTiles.Remove(attackingUnit.currentTile.North);
+                }
+                if (attackingUnit.currentTile.hasEast())
+                {
+                    accessibleTiles.Remove(attackingUnit.currentTile.East);
+                }
+                if (attackingUnit.currentTile.hasSouth())
+                {
+                    accessibleTiles.Remove(attackingUnit.currentTile.South);
+                }
+                if (attackingUnit.currentTile.hasWest())
+                {
+                    accessibleTiles.Remove(attackingUnit.currentTile.West);
+                }
+            }
+        }
+
+        //  after gathering the accessible tiles:
+        //  iterate through each accessible tile to update the color of the tiles
+        foreach (Tile tile in accessibleTiles)
+        {
+            tile.Visited = false;
+            tile.curScore = 0;
+
+            //  change the color of the tile to the actionRangeColor (default to red)
+            tile.rend.color = tile.actionRangeColor;
         }
     }
 
@@ -844,6 +1090,13 @@ public class GridManager : MonoBehaviour
     //  f = g + h
     public bool CalculateAStarPath(Vector2 startPos, Vector2 destPos, out List<Vector2> path)
     {
+        if(activeUnit == null)
+        {
+            Debug.LogError("Can't find a path for nothing!", this);
+            path = new List<Vector2>();
+            return false;
+        }
+
         //  open list for nodes we are currently processing
         Queue<Tile> tilesToProcess = new Queue<Tile>();
         //  closed list for already processed nodes
@@ -857,6 +1110,11 @@ public class GridManager : MonoBehaviour
         //  iterate from the start position until we find the destPos tile (visited == true)
         do
         {
+            if (tilesToProcess.Count == 0)
+            {
+                return false;
+            }
+
             //  cachce the current tile as Current (help readability)
             Tile Current = tilesToProcess.Peek();
             //  check if the tile we are processing has a tile to the north of it
@@ -958,6 +1216,8 @@ public class GridManager : MonoBehaviour
                         {
                             if (South.Occupied)
                             {
+                                Debug.Assert(activeUnit != null, "Active unit was null! Bad!", this);
+
                                 if (South.occupyingUnit == activeUnit.target)
                                 {
                                     South.prevTile = Current;
@@ -1023,6 +1283,13 @@ public class GridManager : MonoBehaviour
             //  sort the queue according to our F-score
             tilesToProcess = new Queue<Tile>(tilesToProcess.OrderBy(x => x.curScore));
 
+            if(processedTilePositions.Count > rows * cols)
+            {
+                Debug.LogError("Oh no, we are somehow processing more tiles than tiles that exist, let's exit...");
+                //  mark that a path could not be found
+                return false;
+            }
+
         } while (!map[destPos].Visited);
 
         //  check if the destination was reached
@@ -1084,37 +1351,4 @@ public class GridManager : MonoBehaviour
             tile.prevColor = tile.defaultColor;
         }
     }
-
-    /*
-    public void ResolveTileCollision(List<Vector2> path)
-    {
-        Tile dest = map[path[path.Count - 1]];
-
-        List<Tile> accessible = new List<Tile>();
-        //  if the tile at the position at the end of the path is occupied:
-        if (dest.Occupied)
-        {
-            activeUnit.hasActed = true;
-            ShowAccessibleTiles(activeUnit, out accessible);
-            //  iterate through the accessible tiles of the active unit
-            foreach (Tile tiles in accessible)
-            {
-                //  if that tile isn't occupied
-                if (!tiles.Occupied)
-                {
-                    //  compare the hScore of the dest to the tile we are looking at
-                    if (tiles.hScore == dest.hScore)
-                    {
-
-                        //  replace the destination with the tile with equivalent hScore
-                        dest = tiles;
-                    }
-                }
-            }
-            //  re-assign end position to new dest
-            path[path.Count - 1] = dest.MapPos;
-            HideAccessibleTiles(activeUnit, accessible);
-            activeUnit.hasActed = false;
-        }
-    }*/
 }

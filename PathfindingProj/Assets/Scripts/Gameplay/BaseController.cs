@@ -11,7 +11,11 @@ public class BaseController : MonoBehaviour
 
     public bool noMoreActions = false;
 
-    public Unit activeUnit;
+    public Unit activeUnit
+    {
+        get => party[0].gridManager.activeUnit;
+        set => party[0].gridManager.activeUnit = value;
+    }
 
     private void Update()
     {

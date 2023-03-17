@@ -1,11 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
     //  List of all buttons for controlling a unit
     [SerializeField] List<GameObject> unitButtons = new List<GameObject>();
+    [SerializeField] public GameObject unitFrame;
+    [SerializeField] Text turnTracker;
+    [SerializeField] TurnManager TurnManager;
 
     //  flag for if a unit is selected
     //  if true -> show unitButtons
@@ -26,6 +30,10 @@ public class UIController : MonoBehaviour
         {
             button.SetActive(false);
         }
+
+        unitFrame.SetActive(false);
+
+        TurnManager = FindObjectOfType<TurnManager>();
     }
 
     private void LateUpdate()
@@ -40,6 +48,8 @@ public class UIController : MonoBehaviour
                 {
                     button.SetActive(false);
                 }
+                //  set the unit frame to inactive
+                unitFrame.SetActive(false);
                 break;
             //  if true:
             case true:
@@ -48,7 +58,26 @@ public class UIController : MonoBehaviour
                 {
                     button.SetActive(true);
                 }
+                //  set the unit frame to active
+                unitFrame.SetActive(true);
                 break;
+        }
+
+        switch (TurnManager.playerTurn)
+        {
+            case true:
+                turnTracker.text = "Player Turn";
+                turnTracker.color = Color.blue;
+                break;
+            case false:
+                turnTracker.text = "Enemy Turn";
+                turnTracker.color = Color.red;
+                break;
+        }
+
+        if (Input.GetKeyDown(KeyCode.BackQuote))
+        {
+            Time.timeScale = 15;
         }
     }
 

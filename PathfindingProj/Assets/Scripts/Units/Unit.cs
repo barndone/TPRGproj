@@ -19,6 +19,8 @@ public class Unit : MonoBehaviour
     [SerializeField] public TurnManager turnManager;
     [SerializeField] public BaseController partyManager;
 
+    UnitFrame uFrame;
+
     //  flag for if the unit is selected
     [SerializeField] public bool isSelected;
 
@@ -53,6 +55,10 @@ public class Unit : MonoBehaviour
     public bool waiting = false;
 
     public bool selectable = true;
+
+    public bool canAttackAdjacent = true;
+
+    public bool unitCantBeReached = false;
 
     //  attack range of the unit
     [SerializeField] private int atkRange = 1;
@@ -128,6 +134,7 @@ public class Unit : MonoBehaviour
         gridManager = FindObjectOfType<GridManager>();
         uiController = FindObjectOfType<UIController>();
         audioSource = FindObjectOfType<AudioSource>();
+        uFrame = uiController.unitFrame.GetComponent<UnitFrame>();
 
         //  assign the current tile
         currentTile = gridManager.map[mapPosition];
@@ -273,26 +280,7 @@ public class Unit : MonoBehaviour
                         accessibleTiles.Clear();
                         gridManager.ResetTiles();
 
-                        gridManager.ShowAccessibleTiles(this, out accessibleTiles);
-                        if (hasAction)
-                        {
-
-
-                            hasAction = false;
-                            hasActed = true;
-
-                            acting = false;
-                            Debug.Log("Attacking!");
-                            if (hasMoved)
-                            {
-                                EndOfUnitActions();
-                            }
-                            else
-                            {
-                                accessibleTiles.Clear();
-                                gridManager.ResetTiles();
-                            }
-                        }
+                        gridManager.ShowAttackableTiles(this, out accessibleTiles);
                     }
                 }
 
@@ -414,7 +402,7 @@ public class Unit : MonoBehaviour
                 //  clean up tile references
 
                 this.currentTile.Occupied = false;
-                this.currentTile.Obstacle = true;
+                this.currentTile.Obstacle = false;
                 this.currentTile.occupyingUnit = null;
                 this.currentTile = null;
 
@@ -440,7 +428,6 @@ public class Unit : MonoBehaviour
                 }
             }
         }
-
     }
 
     protected void OnMouseEnter()
@@ -492,7 +479,11 @@ public class Unit : MonoBehaviour
                             partyManager.activeUnit = this;
                             //  and the ui controller
                             uiController.unitSelected = isSelected;
-                            
+
+                            uFrame.SetHealthText(curHealth, maxHealth);
+                            uFrame.SetAtkText(Attack);
+                            uFrame.SetDefText(Defence);
+
                         }
                         //  otherwise, they were unselected
                         else
@@ -561,6 +552,7 @@ public class Unit : MonoBehaviour
         hasActed = false;
         hasMoved = false;
         isSelected = false;
+        unitCantBeReached = false;
 
         //  update the animation to not be selected
         animator.SetBool("selected", isSelected);

@@ -68,12 +68,21 @@ public class ComputerController : BaseController
                 IDecision curDecision = decisionRoots[i];
             
                 //  while the decision is not returning null:
-                while (curDecision != null)
+                for (int j = 0; j < 50 && curDecision != null; ++j)
                 {
                     //  make decisions!
                     curDecision = curDecision.MakeDecision(party[i]);
+
+                    if(j == 49)
+                    {
+                        Debug.LogError("Unit will exceed decision making limit! Next run of this loop will abort.");
+                    }
                 }
+
+                party[i].gridManager.HideAccessibleTiles(party[i], party[i].accessibleTiles);
+                party[i].gridManager.ResetTiles();
             }
+            
         }
     }
 }
