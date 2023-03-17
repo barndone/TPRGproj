@@ -12,6 +12,8 @@ public class UIController : MonoBehaviour
     [SerializeField] Text turnTracker;
     [SerializeField] TurnManager TurnManager;
 
+    [SerializeField] GridManager gridManager;
+
     //  flag for if a unit is selected
     //  if true -> show unitButtons
     //  otherwise -> hide unitBottons
@@ -36,6 +38,7 @@ public class UIController : MonoBehaviour
         targetFrame.SetActive(false);
 
         TurnManager = FindObjectOfType<TurnManager>();
+        gridManager = FindObjectOfType<GridManager>();
     }
 
     private void LateUpdate()
@@ -76,6 +79,45 @@ public class UIController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.BackQuote))
         {
             Time.timeScale = 15;
+        }
+
+        /*
+         * UnitButtons List:
+         * 0 - attack button
+         * 1 - skill button
+         * 2 - wait button
+         * 3 - cancel button
+         * 4 - move button
+         */
+
+        //  if there is an active unit--
+        if (gridManager.activeUnit != null)
+        {
+            //  cache the active unit
+            Unit activeUnit = gridManager.activeUnit;
+
+            switch (!activeUnit.hasMoved)
+            {
+                case false:
+                    unitButtons[4].GetComponent<Button>().interactable = false;
+                    break;
+                case true:
+                    unitButtons[4].GetComponent<Button>().interactable = true;
+                    break;
+            }
+
+            switch (!activeUnit.hasActed)
+            {
+                case false:
+                    unitButtons[0].GetComponent<Button>().interactable = false;
+                    unitButtons[1].GetComponent<Button>().interactable = false;
+                    break;
+
+                case true:
+                    unitButtons[0].GetComponent<Button>().interactable = true;
+                    unitButtons[1].GetComponent<Button>().interactable = true;
+                    break;
+            }
         }
     }
 
