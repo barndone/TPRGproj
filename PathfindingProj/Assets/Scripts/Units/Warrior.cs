@@ -90,7 +90,7 @@ public class Warrior : Unit
             {
                 this.hasAction = false;
                 this.hasActed = false;
-                Debug.Log("Target tile empty");
+                Debug.Log("Target is not valid");
             }
         }
     }

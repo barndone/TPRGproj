@@ -638,8 +638,16 @@ public class GridManager : MonoBehaviour
         //  if the unit has not acted
         if (!attackingUnit.hasActed)
         {
-            //  add the attack range to the accessibleTiles range
-            range += attackingUnit.AttackRange;
+            if (attackingUnit.uiController.attackWish)
+            {
+                //  add the attack range to the accessibleTiles range
+                range += attackingUnit.AttackRange;
+            }
+
+            else if (attackingUnit.uiController.skillWish)
+            {
+                range += attackingUnit.SkillRange;
+            }
         }
 
         //  otherwise, we should exit
@@ -843,7 +851,16 @@ public class GridManager : MonoBehaviour
             tile.curScore = 0;
 
             //  change the color of the tile to the actionRangeColor (default to red)
-            tile.rend.color = tile.actionRangeColor;
+            if (activeUnit.unitID == 1)
+            {
+                tile.rend.color = Color.green;
+            }
+            else
+            {
+                tile.rend.color = tile.actionRangeColor;
+
+            }
+
         }
     }
 

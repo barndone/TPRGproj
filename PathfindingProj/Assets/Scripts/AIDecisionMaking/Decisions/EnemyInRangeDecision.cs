@@ -106,7 +106,7 @@ public class EnemyInRangeDecision : IDecision
                 agent.hasMoved = true;
                 //  calculate the accessible tiles of the agent
                 agent.gridManager.ShowAttackableTiles(agent, out agent.accessibleTiles);
-
+                agent.uiController.attackWish = true;
                 //  if the accessibleTiles list contains the currentTile of the target:
                 if (agent.accessibleTiles.Contains(agent.target.currentTile))
                 {

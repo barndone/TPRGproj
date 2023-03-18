@@ -42,11 +42,12 @@ public class Unit : MonoBehaviour
 
     public int unitID;
 
+    public bool stunned;
 
     //  flag for if the unit has a path
     public bool hasPath = false;
     //  index for iteration through path list
-    private int pathIndex = 1;
+    private int pathIndex = 0;
 
     public bool hasMoved = false;
     public bool hasActed = false;
@@ -130,6 +131,8 @@ public class Unit : MonoBehaviour
 
     public IDecision unitDecisionRef;
 
+    public bool canUseSkill = true;
+
 
     void Start()
     {
@@ -195,14 +198,6 @@ public class Unit : MonoBehaviour
 
                             //  update the mapPosition to the difference between the current point along the math and the current map position
                             //  ex: mapPos = {0,0}; point = {1,0}; delta is {1,0}
-                            mapPosition += (pathToMove[pathIndex] - mapPosition);
-
-                            //  update the transform of the unit in world space to the world space position of the new tile
-                            transform.position = gridManager.map[mapPosition].gameObj.transform.position;
-                            //  update currentTile reference
-                            currentTile = gridManager.map[mapPosition];
-                            //  incrememnt pathIndex
-                            pathIndex++;
 
                             //  if the pathIndex is greater than or equal to the number of entries in pathToMove:
                             if (pathIndex > MaxMove || pathIndex >= pathToMove.Count)
@@ -212,8 +207,6 @@ public class Unit : MonoBehaviour
                                 hasMoved = true;
                                 acting = false;
 
-                                //  reset pathIndex to 1
-                                pathIndex = pathToMove.Count - 1;
                                 //  mark that there is no longer a path
                                 hasPath = false;
 
@@ -228,31 +221,45 @@ public class Unit : MonoBehaviour
                                 }
                             }
 
-                            //  if the next location on the path is the target position:
-                            if ( target != null && pathToMove[pathIndex] == target.mapPosition && hasPath)
+                            else
                             {
+                                //  if the next location on the path is the target position:
+                                if (target != null && pathToMove[pathIndex] == target.mapPosition && hasPath)
+                                {
 
-                                mapPosition = pathToMove[pathIndex - 1];
+                                    mapPosition = pathToMove[pathIndex - 1];
+                                    //  update the transform of the unit in world space to the world space position of the new tile
+                                    transform.position = gridManager.map[mapPosition].gameObj.transform.position;
+                                    //  update currentTile reference
+                                    currentTile = gridManager.map[mapPosition];
+
+                                    //  Time to star the action Process
+                                    uiController.moveWish = false;
+                                    hasMoved = true;
+                                    acting = false;
+
+                                    //  hide the accessible tiles of the unit
+                                    gridManager.HideAccessibleTiles(this, accessibleTiles);
+                                    accessibleTiles.Clear();
+                                    gridManager.ResetTiles();
+
+                                    if (hasActed)
+                                    {
+                                        EndOfUnitActions();
+                                    }
+                                }
+
+                                mapPosition += (pathToMove[pathIndex] - mapPosition);
+
                                 //  update the transform of the unit in world space to the world space position of the new tile
                                 transform.position = gridManager.map[mapPosition].gameObj.transform.position;
                                 //  update currentTile reference
                                 currentTile = gridManager.map[mapPosition];
-
-                                //  Time to star the action Process
-                                uiController.moveWish = false;
-                                hasMoved = true;
-                                acting = false;
-
-                                //  hide the accessible tiles of the unit
-                                gridManager.HideAccessibleTiles(this, accessibleTiles);
-                                accessibleTiles.Clear();
-                                gridManager.ResetTiles();
-
-                                if (hasActed)
-                                {
-                                    EndOfUnitActions();
-                                }
+                                //  incrememnt pathIndex
+                                pathIndex++;
                             }
+
+
 
                             //  mark the current tile as occupied
                             gridManager.map[mapPosition].Occupied = true;
@@ -292,7 +299,7 @@ public class Unit : MonoBehaviour
                         accessibleTiles.Clear();
                         gridManager.ResetTiles();
 
-                        gridManager.ShowAccessibleTiles(this, out accessibleTiles);
+                        gridManager.ShowAttackableTiles(this, out accessibleTiles);
                         if (hasAction)
                         {
                             //  play the skill sound
@@ -329,7 +336,7 @@ public class Unit : MonoBehaviour
             {
                 //  handle cancelling movement
                 //  if the unit has moved:
-                if (hasMoved)
+                if (hasMoved && !hasActed)
                 {
                     //  re-assign hasMoved to false
                     hasMoved = false;
@@ -351,8 +358,8 @@ public class Unit : MonoBehaviour
                     //  cleanup:
                     //  clear path to move
                     pathToMove.Clear();
-                    //  reset pathIndex to 1
-                    pathIndex = 1;
+                    //  reset pathIndex to 0
+                    pathIndex = 0;
                     //  mark that there is no longer a path
                     hasPath = false;
 
@@ -567,8 +574,8 @@ public class Unit : MonoBehaviour
         //  start cleanup
         //  clear path to move
         pathToMove.Clear();
-        //  reset pathIndex to 1
-        pathIndex = 1;
+        //  reset pathIndex to 0
+        pathIndex = 0;
         //  mark that there is no longer a path
         hasPath = false;
 
@@ -593,15 +600,27 @@ public class Unit : MonoBehaviour
         gridManager.ResetTiles();
         uiController.ResetFlags();
         waiting = true;
+
+        //  if the unit is stunned
+        if (stunned)
+        {
+            //  mark them as no longer stunned
+            stunned = !stunned;
+        }
     }
 
     public void StartOfTurn()
     {
-        waiting = false;
-        hasActed = false;
-        hasMoved = false;
-        isSelected = false;
-        unitCantBeReached = false;
+        //  if the unit is not stunned, reset the flags
+        if (!stunned)
+        {
+            waiting = false;
+            hasActed = false;
+            hasMoved = false;
+            isSelected = false;
+            unitCantBeReached = false;
+        }
+
 
         //  update the animation to not be selected
         animator.SetBool("selected", isSelected);
@@ -641,6 +660,7 @@ public class Unit : MonoBehaviour
 
                         this.hasAction = false;
                         this.hasActed = true;
+                        this.uiController.attackWish = false;
                         StartCoroutine(PlayRandomAttackAndDamageSounds(other));
 
                         Debug.Log("Attacking " + other + ", current health: " + other.curHealth);

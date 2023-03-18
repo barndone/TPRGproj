@@ -35,6 +35,8 @@ public class UIController : MonoBehaviour
 
     [SerializeField] Button endTurnButton;
 
+    [SerializeField] Text skillButtonText;
+
     void Start()
     {
         foreach(GameObject button in unitButtons)
@@ -128,14 +130,44 @@ public class UIController : MonoBehaviour
             {
                 case false:
                     attackButton.interactable = false;
-                    skillButton.interactable = false;
                     break;
 
                 case true:
                     attackButton.interactable = true;
-                    skillButton.interactable = true;
                     break;
             }
+
+            if (activeUnit.canUseSkill && !activeUnit.hasActed)
+            {
+                skillButton.interactable = true;
+            }
+            else
+            {
+                skillButton.interactable = false;
+            }
+
+            switch (activeUnit.unitID)
+            {
+                case 0:
+                    //  unitID of 0 == warrior
+                    skillButtonText.text = "Shove a unit one tile away.\nIf there is a collision, each unit takes 1 dmg.";
+                    break;
+                case 1:
+                    //  unitId of 1 == Cleric
+                    Cleric cleric = (Cleric)activeUnit;
+                    skillButtonText.text = "Heal an ally by "+ cleric.Attack + ".\nRemaining uses: " + (cleric.maxHeals - cleric.healCount) + " of " + cleric.maxHeals;
+                    break;
+                case 2:
+                    //  unitID of 2 == rogue
+                    Rogue rogue = (Rogue)activeUnit;
+                    skillButtonText.text = "Stun an enemy.\nRemaining uses: " + (rogue.maxStuns - rogue.stunCount) + " of " + rogue.maxStuns;
+                    break;
+                case 3:
+                    //  unitID of 3 == ranger
+                    skillButtonText.text = "Fire a powerful shot.\nUnit cannot move the same turn as using this skill.";
+                    break;
+            }
+
         }
 
         else
