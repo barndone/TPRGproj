@@ -26,6 +26,8 @@ public class Cleric : Unit
 
                     //  heal by an amount equal to this unit's attack stat
                     target.CurHealth += (this.Attack);
+                    target.healingTaken_val += (this.Attack);
+                    this.healingDone_val += (this.Attack);
                     //  check to see if we have surpassed the max health of the target
                     if (target.CurHealth > target.MaxHealth)
                     {
