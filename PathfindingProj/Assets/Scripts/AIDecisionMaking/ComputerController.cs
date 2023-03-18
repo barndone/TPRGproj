@@ -64,25 +64,26 @@ public class ComputerController : BaseController
             //  iterate through this controllers party
             for (int i = 0; i < party.Count; i++)
             {
-                //  assign the current decision to the units corresponding decision in the list
-                IDecision curDecision = decisionRoots[i];
-            
-                //  while the decision is not returning null:
-                for (int j = 0; j < 50 && curDecision != null; ++j)
+                if (!party[i].IsDead)
                 {
-                    //  make decisions!
-                    curDecision = curDecision.MakeDecision(party[i]);
-
-                    if(j == 49)
+                    //  assign the current decision to the units corresponding decision in the list
+                    IDecision curDecision = decisionRoots[i];
+                    //  while the decision is not returning null:
+                    for (int j = 0; j < 50 && curDecision != null; ++j)
                     {
-                        Debug.LogError("Unit will exceed decision making limit! Next run of this loop will abort.");
-                    }
-                }
+                        //  make decisions!
+                        curDecision = curDecision.MakeDecision(party[i]);
 
-                party[i].gridManager.HideAccessibleTiles(party[i], party[i].accessibleTiles);
-                party[i].gridManager.ResetTiles();
-            }
-            
+                        if (j == 49)
+                        {
+                            Debug.LogError("Unit will exceed decision making limit! Next run of this loop will abort.");
+                        }
+                    }
+
+                    party[i].gridManager.HideAccessibleTiles(party[i], party[i].accessibleTiles);
+                    party[i].gridManager.ResetTiles();
+                }
+            }   
         }
     }
 }

@@ -12,6 +12,8 @@ public class UIController : MonoBehaviour
     [SerializeField] Text turnTracker;
     [SerializeField] TurnManager TurnManager;
 
+    [SerializeField] Text helpText;
+
     [SerializeField] GridManager gridManager;
 
     //  flag for if a unit is selected
@@ -58,6 +60,8 @@ public class UIController : MonoBehaviour
         moveButton = unitButtons[4].GetComponent<Button>();
         attackButton = unitButtons[0].GetComponent<Button>();
         skillButton = unitButtons[1].GetComponent<Button>();
+
+        helpText.gameObject.SetActive(false);
     }
 
     private void LateUpdate()
@@ -215,4 +219,17 @@ public class UIController : MonoBehaviour
         moveWish = false;
         endTurnWish = false;
     }
+
+    public void Help()
+    { 
+        if (helpText.gameObject.activeSelf)
+        {
+            helpText.gameObject.SetActive(false);
+        }
+        else
+        {
+            helpText.gameObject.SetActive(true);
+        }
+    }
+
 }

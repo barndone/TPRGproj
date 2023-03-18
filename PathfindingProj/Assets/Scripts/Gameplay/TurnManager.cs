@@ -36,9 +36,13 @@ public class TurnManager : MonoBehaviour
             //  for each unit in the player party
             foreach(Unit unit in player.party)
             {
-                //  reset the flags on that unit to allow for movement and action
-                unit.StartOfTurn();
-                unit.selectable = true;
+                if (!unit.IsDead)
+                {
+                    //  reset the flags on that unit to allow for movement and action
+                    unit.StartOfTurn();
+                    unit.selectable = true;
+                }
+
             }
             //  mark that the player has actions to take
             player.noMoreActions = false;
@@ -55,9 +59,12 @@ public class TurnManager : MonoBehaviour
             //  for each unit in the CPU party
             foreach (Unit unit in cpu.party)
             {
-                //  reset the flags on that unit to allow for movement and action
-                unit.StartOfTurn();
-                unit.selectable = true;
+                if (!unit.IsDead)
+                {
+                    //  reset the flags on that unit to allow for movement and action
+                    unit.StartOfTurn();
+                    unit.selectable = true;
+                }
             }
             //  mark that the cpu controller has actions to take
             cpu.noMoreActions = false;

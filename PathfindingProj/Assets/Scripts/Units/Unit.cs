@@ -379,16 +379,6 @@ public class Unit : MonoBehaviour
                 //  play our death sound!
                 audioSource.PlayOneShot(deathSound);
 
-                //  if this unit is not an ally
-                if (!ally)
-                {
-                    //  cache the computerController ref
-                    ComputerController cpu = partyManager.GetComponent<ComputerController>();
-
-                    //  remove this units decision ref from the decisionRoots list
-                    cpu.decisionRoots.Remove(this.unitDecisionRef);
-                }
-
                 //  swap the sprite to the gravestone
                 sprite.sprite = deadSprite;
                 this.selectable = false;

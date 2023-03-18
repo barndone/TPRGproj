@@ -32,6 +32,8 @@ public class GridManager : MonoBehaviour
     //  reference to the currently active unit
     public Unit activeUnit = null;
 
+    [SerializeField] GameObject sceneCamera;
+
     //  method for generating the tile map
     private void GenerateGrid()
     {
@@ -121,6 +123,8 @@ public class GridManager : MonoBehaviour
     {
         //  generate the grid!
         GenerateGrid();
+        Vector3 xCameraOffset = new Vector3(map[new Vector2(rows - 1, cols - 1)].gameObj.transform.position.x / 2.0f ,0.0f,0.0f);
+        sceneCamera.transform.position += xCameraOffset;
     }
 
     //  function to swap the tile between states (for testing purposes only)

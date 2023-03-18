@@ -1,22 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class BattleOverScene : MonoBehaviour
 {
-    [SerializeField] List<Sprite> portraits = new List<Sprite>();
+    
 
     private List<int> stats = new List<int>();
-
-    //  1.  class - unit id (0 - 3)
-    //  2.  dmg done
-    //  3.  dmg taken
-    //  4.  healing done
-    //  5.  healing taken
-    //  6.  alive/dead (0/1)
-
-    public struct UnitStats
+    private struct UnitStats
     {
         public int classID;
         public int dmgDone;
@@ -26,11 +20,18 @@ public class BattleOverScene : MonoBehaviour
         public bool IsDead;
     }
 
-    UnitStats[] party = new UnitStats[3];
-
     private bool victory;
-
+    UnitStats[] party = new UnitStats[3];
+    public StatScreenPanel[] statPanels = new StatScreenPanel[3];
     [SerializeField] Text conditionText;
+    [SerializeField] List<Sprite> portraits = new List<Sprite>();
+
+    [SerializeField] AudioSource buttonSource;
+    [SerializeField] AudioClip buttonSound;
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip menuMusicEnd;
+
+    private bool shouldExit = false;
 
     private void Awake()
     {
@@ -72,6 +73,27 @@ public class BattleOverScene : MonoBehaviour
         {
             conditionText.text = "Defeat..";
         }
+
+        for (int i = 0; i < statPanels.Length; i++)
+        {
+            //  if the party member is dead
+            if (party[i].IsDead)
+            {
+                //  assing the portrait to the gravestone
+                statPanels[i].portrait.sprite = portraits[4];
+            }
+            //  otherwise:
+            else
+            {
+                //  assign the portrait given the class ID
+                statPanels[i].portrait.sprite = portraits[party[i].classID];
+            }
+
+            statPanels[i].DmgDone.text = "Dmg Done: " + party[i].dmgDone;
+            statPanels[i].DmgTaken.text = "Dmg Taken: " + party[i].dmgTaken;
+            statPanels[i].HealingDone.text = "Healing Done: " + party[i].healingDone;
+            statPanels[i].HealingTaken.text = "Healing Taken: " + party[i].healingTaken;
+        }
     }
 
     private bool CheckVictoryStatus()
@@ -85,5 +107,44 @@ public class BattleOverScene : MonoBehaviour
         }
 
         return true;
+    }
+
+    //  return to the main menu
+    public void ReturnToMenu()
+    {
+        buttonSource.PlayOneShot(buttonSound);
+        StartCoroutine(DelayedLoad(menuMusicEnd, 0));
+    }
+
+    //  return to the party select screen to select a new party
+    public void ReturnToPartySelect()
+    {
+        buttonSource.PlayOneShot(buttonSound);
+        StartCoroutine(DelayedLoad(menuMusicEnd, 1));
+    }
+
+    //  re-attempt the battle scene with your previous party
+    public void Continue()
+    {
+        buttonSource.PlayOneShot(buttonSound);
+        StartCoroutine(DelayedLoad(menuMusicEnd, 2));
+    }
+
+    //Delayed load for a scene with parameters for an audio clip, and a scene index
+    IEnumerator DelayedLoad(AudioClip clip, int sceneIndex)
+    {
+        if (!shouldExit)
+        {
+
+            shouldExit = true;
+
+            audioSource.Stop();
+            audioSource.PlayOneShot(clip);
+
+            yield return new WaitForSecondsRealtime(clip.length);
+
+            shouldExit = false;
+            SceneManager.LoadScene(sceneIndex);
+        }
     }
 }
