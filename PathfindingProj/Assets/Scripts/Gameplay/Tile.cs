@@ -117,6 +117,29 @@ public class Tile : MonoBehaviour, IComparer<Tile>
         prevColor = rend.color;
         //  change the mouseover color
         rend.color = mouseoverColor;
+
+        if (this.occupied)
+        {
+            Unit highlightUnit = this.occupyingUnit;
+
+            //  on mouse entering the collider of this unit:
+            //  begin highlighted animation
+            highlightUnit.animator.SetBool("highlighted", true);
+
+            //  if no unit is selected, update/show the "player" frame on entering collider
+            if (gridManager.activeUnit == null)
+            {
+                highlightUnit.uiController.unitFrame.SetActive(true);
+                highlightUnit.playerFrame.UpdateUnitFrame(highlightUnit);
+            }
+            //  otherwise, update/show the "target" frame on entering collider
+            else
+            {
+                highlightUnit.uiController.targetFrame.SetActive(true);
+                highlightUnit.targetFrame.UpdateUnitFrame(highlightUnit);
+            }
+        }
+
     }
 
     //  on the mouse exiting the collider of the tile
@@ -124,6 +147,28 @@ public class Tile : MonoBehaviour, IComparer<Tile>
     {
         //  change the tile to the previous color
         rend.color = prevColor;
+
+        if (this.occupied)
+        {
+            Unit highlightUnit = this.occupyingUnit;
+
+            //  on mouse exiting the collider of this unit:
+            //  stop the highlighted animation
+            highlightUnit.animator.SetBool("highlighted", false);
+
+            //  if no unit is selected, hide the unit frame on mouse leaving collider
+            if (gridManager.activeUnit == null)
+            {
+                highlightUnit.uiController.unitFrame.SetActive(false);
+                highlightUnit.playerFrame.target = null;
+            }
+            //  otherwise, hide the "target" frame on leaving collider
+            else
+            {
+                highlightUnit.uiController.targetFrame.SetActive(false);
+                highlightUnit.targetFrame.target = null;
+            }
+        }
     }
 
     //  while the mouse is over the collider for the tile:
@@ -177,6 +222,43 @@ public class Tile : MonoBehaviour, IComparer<Tile>
                             activeUnit.hasAction = true;
                             activeUnit.Skill(gridManager.map[mapPos]);
 
+                        }
+                    }
+                }
+            }
+
+            else
+            {
+                if (this.occupied)
+                {
+                    Unit newActiveUnit = this.occupyingUnit;
+                    //  check if this unit is on an ally
+                    //  AND it is your turn
+                    if (newActiveUnit.turnManager.playerTurn && newActiveUnit.ally)
+                    {
+                        //  check if the unit has not taken its actions
+                        if (!newActiveUnit.waiting)
+                        {
+                        //  then we can go through the selection process!
+                        //  swap whether it was selected
+
+
+                        newActiveUnit.isSelected = !newActiveUnit.isSelected;
+                        //  update the selected animation depending on isSelected being T/F
+                        newActiveUnit.animator.SetBool("selected", newActiveUnit.isSelected);
+
+                            //  if the unit is now selected
+                            if (newActiveUnit.isSelected)
+                            {
+                                //  pass that this is the active unit to the grid manager
+                                gridManager.activeUnit = newActiveUnit;
+                                //  and the unit controller
+                                newActiveUnit.partyManager.activeUnit = newActiveUnit;
+                                //  and the ui controller
+                                newActiveUnit.uiController.unitSelected = newActiveUnit.isSelected;
+
+                                newActiveUnit.playerFrame.UpdateUnitFrame(newActiveUnit);
+                            }
                         }
                     }
                 }

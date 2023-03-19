@@ -69,9 +69,9 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingLayerID: 804429961
+  m_SortingLayer: 2
+  m_SortingOrder: 0
   m_Sprite: {fileID: 5174061394676507746, guid: aa0275af32bb1d3408b227f0e436e256, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
@@ -186,6 +186,7 @@ MonoBehaviour:
   sprite: {fileID: 2879690127980965610}
   deadSprite: {fileID: -4582171896946982042, guid: aa0275af32bb1d3408b227f0e436e256, type: 3}
   unitID: 4
+  stunned: 0
   hasPath: 0
   hasMoved: 0
   hasActed: 0
@@ -204,6 +205,11 @@ MonoBehaviour:
   maxHealth: 10
   attack: 2
   defence: 1
+  dmgDone_val: 0
+  dmgTaken_val: 0
+  healingDone_val: 0
+  healingTaken_val: 0
+  AdjacentTiles: []
   audioSource: {fileID: 0}
   walkSounds:
   - {fileID: 8300000, guid: 561bd0f6147c7bd4f9af981c21f68d97, type: 3}
@@ -221,3 +227,4 @@ MonoBehaviour:
   deathSound: {fileID: 8300000, guid: 0b387f09e6bd67b45b19991aef2dc685, type: 3}
   canHeal: 0
   target: {fileID: 0}
+  canUseSkill: 1

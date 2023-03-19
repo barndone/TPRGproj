@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
@@ -29,6 +30,9 @@ public class UIController : MonoBehaviour
     public bool cancelWish = false;
     public bool endTurnWish = false;
 
+
+    public bool showDangerZone = false;
+
     Button moveButton;
     Button attackButton;
     Button skillButton;
@@ -36,6 +40,13 @@ public class UIController : MonoBehaviour
     [SerializeField] Button endTurnButton;
 
     [SerializeField] Text skillButtonText;
+
+    [SerializeField] AudioSource buttonSource;
+    [SerializeField] AudioClip buttonSound;
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip menuMusicEnd;
+
+    private bool shouldExit = false;
 
     void Start()
     {
@@ -264,4 +275,69 @@ public class UIController : MonoBehaviour
         }
     }
 
+    public void DangerRadius()
+    {
+        showDangerZone = !showDangerZone;
+
+        if (showDangerZone)
+        {
+            gridManager.CalculateDangerZone(TurnManager.cpu.party);
+        }
+
+        else
+        {
+            //  invert the thing
+            foreach (Unit enemy in TurnManager.cpu.party)
+            {
+                gridManager.HideAccessibleTiles(enemy, enemy.accessibleTiles);
+            }
+        }
+    }
+
+    public void Quit()
+    {
+        buttonSource.PlayOneShot(buttonSound);
+        StartCoroutine(DelayedQuit(menuMusicEnd));
+    }
+
+    //  return to the main menu
+    public void ReturnToMenu()
+    {
+        buttonSource.PlayOneShot(buttonSound);
+        StartCoroutine(DelayedLoad(menuMusicEnd, 0));
+    }
+
+    //Delayed load for a scene with parameters for an audio clip, and a scene index
+    IEnumerator DelayedLoad(AudioClip clip, int sceneIndex)
+    {
+        if (!shouldExit)
+        {
+
+            shouldExit = true;
+
+            audioSource.Stop();
+            audioSource.PlayOneShot(clip);
+
+            yield return new WaitForSecondsRealtime(clip.length);
+
+            shouldExit = false;
+            SceneManager.LoadScene(sceneIndex);
+        }
+    }
+
+    IEnumerator DelayedQuit(AudioClip clip)
+    {
+        if (!shouldExit)
+        {
+            shouldExit = true;
+
+            audioSource.Stop();
+            audioSource.PlayOneShot(clip);
+
+            yield return new WaitForSecondsRealtime(clip.length);
+
+            shouldExit = false;
+            Application.Quit();
+        }
+    }
 }

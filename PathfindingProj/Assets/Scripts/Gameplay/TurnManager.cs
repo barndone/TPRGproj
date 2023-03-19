@@ -15,6 +15,8 @@ public class TurnManager : MonoBehaviour
     //  reference to the computer controller (stores each unit the computer has contorl over)
     [SerializeField] public ComputerController cpu;
 
+    GridManager gridManager;
+
     //  Fields for controlling audio:
     bool shouldExit = false;
 
@@ -52,6 +54,9 @@ public class TurnManager : MonoBehaviour
                 unit.selectable = false;
                 unit.EndOfUnitActions();
             }
+
+            gridManager.CalculateDangerZone(cpu.party);
+            
         }
 
         //  otherwise, it's the CPU turn
@@ -60,6 +65,8 @@ public class TurnManager : MonoBehaviour
             //  for each unit in the CPU party
             foreach (Unit unit in cpu.party)
             {
+                unit.accessibleTiles.Clear();
+
                 if (!unit.IsDead)
                 {
                     //  reset the flags on that unit to allow for movement and action
@@ -163,6 +170,8 @@ public class TurnManager : MonoBehaviour
     private void Awake()
     {
         StartCoroutine(PlayMusicIntro(musicIntro));
+
+        gridManager = FindObjectOfType<GridManager>();
     }
 
     //  Called at the end of every frame to see if the victory condition is met

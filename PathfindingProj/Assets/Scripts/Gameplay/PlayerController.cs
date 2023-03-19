@@ -11,6 +11,9 @@ public class PlayerController : BaseController
     [SerializeField] private GameObject roguePrefab;
     [SerializeField] private GameObject rangerPrefab;
 
+    //  holds the list of tiles the enemy can access
+    public List<Tile> dangerZone = new List<Tile>();
+
     void Awake()
     {
         unitIds = SaveSystem.instance.LoadParty();

@@ -98,15 +98,24 @@ public class BattleOverScene : MonoBehaviour
 
     private bool CheckVictoryStatus()
     {
+        int deathCount = 0;
+
         foreach (UnitStats unit in party)
         {
             if (unit.IsDead == true)
             {
-                return false;
+                deathCount++;
             }
         }
 
-        return true;
+        if (deathCount == 3)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 
     //  return to the main menu

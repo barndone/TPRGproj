@@ -70,8 +70,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1549078083
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: -864482049990023250, guid: eccf1f40615929847a5f06d4b45fa461, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -98,12 +98,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   occupied: 0
   obstacle: 0
+  occupyingUnit: {fileID: 0}
+  gridManager: {fileID: 0}
   gameObj: {fileID: 0}
+  rend: {fileID: 0}
   north: {fileID: 0}
   east: {fileID: 0}
   south: {fileID: 0}
   west: {fileID: 0}
-  highlight: {fileID: 0}
+  mapPos: {x: 0, y: 0}
+  moveScore: 1
+  defaultDistance: 1
+  curScore: 0
+  hScore: 0
+  prevTile: {fileID: 0}
+  visited: 0
+  moveRange: 0
+  actionRange: 0
+  moveRangeColor: {r: 0, g: 0, b: 1, a: 1}
+  actionRangeColor: {r: 1, g: 0, b: 0, a: 1}
+  defaultColor: {r: 1, g: 1, b: 1, a: 1}
+  highlight: 0
+  prevColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!60 &4895535169268937867
 PolygonCollider2D:
   m_ObjectHideFlags: 0

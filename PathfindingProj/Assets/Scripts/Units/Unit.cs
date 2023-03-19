@@ -19,8 +19,8 @@ public class Unit : MonoBehaviour
     [SerializeField] public TurnManager turnManager;
     [SerializeField] public BaseController partyManager;
 
-    UnitFrame playerFrame;
-    UnitFrame targetFrame;
+    public UnitFrame playerFrame;
+    public UnitFrame targetFrame;
 
     //  flag for if the unit is selected
     [SerializeField] public bool isSelected;
@@ -47,7 +47,7 @@ public class Unit : MonoBehaviour
     //  flag for if the unit has a path
     public bool hasPath = false;
     //  index for iteration through path list
-    private int pathIndex = 0;
+    private int pathIndex = 1;
 
     public bool hasMoved = false;
     public bool hasActed = false;
@@ -132,6 +132,7 @@ public class Unit : MonoBehaviour
     public IDecision unitDecisionRef;
 
     public bool canUseSkill = true;
+
 
 
     void Start()
@@ -358,8 +359,8 @@ public class Unit : MonoBehaviour
                     //  cleanup:
                     //  clear path to move
                     pathToMove.Clear();
-                    //  reset pathIndex to 0
-                    pathIndex = 0;
+                    //  reset pathIndex to 1
+                    pathIndex = 1;
                     //  mark that there is no longer a path
                     hasPath = false;
 
@@ -388,6 +389,7 @@ public class Unit : MonoBehaviour
 
                 //  swap the sprite to the gravestone
                 sprite.sprite = deadSprite;
+                sprite.sortingLayerName = "Background";
                 this.selectable = false;
                 animator.enabled = false;
 
@@ -498,65 +500,63 @@ public class Unit : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
 
-                //  then we can do the song and dance
-                //  check if we can make this the active unit:
-                if (gridManager.activeUnit == null)
+            //  then we can do the song and dance
+            //  check if we can make this the active unit:
+            if (gridManager.activeUnit == null)
+            {
+                //  check if this unit is on an ally
+                //  AND it is your turn
+                if (turnManager.playerTurn && ally)
                 {
-                    //  check if this unit is on an ally
-                    //  AND it is your turn
-                    if (turnManager.playerTurn && ally)
+                    //  check if the unit has not taken its actions
+                    if (!waiting)
                     {
-                        //  check if the unit has not taken its actions
-                        if (!waiting)
+                        //  then we can go through the selection process!
+                        //  swap whether it was selected
+
+
+                        isSelected = !isSelected;
+                        //  update the selected animation depending on isSelected being T/F
+                        animator.SetBool("selected", isSelected);
+
+                        //  if the unit is now selected
+                        if (isSelected)
                         {
-                            //  then we can go through the selection process!
-                            //  swap whether it was selected
+                            //  pass that this is the active unit to the grid manager
+                            gridManager.activeUnit = this;
+                            //  and the unit controller
+                            partyManager.activeUnit = this;
+                            //  and the ui controller
+                            uiController.unitSelected = isSelected;
 
-
-                            isSelected = !isSelected;
-                            //  update the selected animation depending on isSelected being T/F
-                            animator.SetBool("selected", isSelected);
-
-                            //  if the unit is now selected
-                            if (isSelected)
-                            {
-                                //  pass that this is the active unit to the grid manager
-                                gridManager.activeUnit = this;
-                                //  and the unit controller
-                                partyManager.activeUnit = this;
-                                //  and the ui controller
-                                uiController.unitSelected = isSelected;
-
-                            playerFrame.UpdateUnitFrame(this);
-                            }
+                        playerFrame.UpdateUnitFrame(this);
                         }
                     }
                 }
+            }
 
-                //  otherwise, we have an active unit and should check for actions
-                else
+            //  otherwise, we have an active unit and should check for actions
+            else
+            {
+                //  cache the active unit
+                Unit activeUnit = gridManager.activeUnit;
+
+                //  check if THIS unit occupies a tile that the active unit can interact with
+                if (activeUnit.ValidTile(this.mapPosition))
                 {
-                    //  cache the active unit
-                    Unit activeUnit = gridManager.activeUnit;
-
-                    //  check if THIS unit occupies a tile that the active unit can interact with
-                    if (activeUnit.ValidTile(this.mapPosition))
+                    if (activeUnit.uiController.attackWish)
                     {
-                        if (activeUnit.uiController.attackWish)
-                        {
-                            activeUnit.hasAction = true;
-                            activeUnit.Attacking(this.currentTile);
-                        }
-
-                        else if (activeUnit.uiController.skillWish)
-                        {
-                            activeUnit.hasAction = true;
-                            activeUnit.Skill(this.currentTile);
-                        } 
-                            
+                        activeUnit.hasAction = true;
+                        activeUnit.Attacking(this.currentTile);
                     }
+
+                    else if (activeUnit.uiController.skillWish)
+                    {
+                        activeUnit.hasAction = true;
+                        activeUnit.Skill(this.currentTile);
+                    }    
                 }
-            
+            }
             //  otherwise, do nothing
         }
     }
@@ -574,8 +574,8 @@ public class Unit : MonoBehaviour
         //  start cleanup
         //  clear path to move
         pathToMove.Clear();
-        //  reset pathIndex to 0
-        pathIndex = 0;
+        //  reset pathIndex to 1
+        pathIndex = 1;
         //  mark that there is no longer a path
         hasPath = false;
 
@@ -606,6 +606,14 @@ public class Unit : MonoBehaviour
         {
             //  mark them as no longer stunned
             stunned = !stunned;
+        }
+
+        if (ally)
+        {
+            if (uiController.showDangerZone)
+            {
+                gridManager.CalculateDangerZone(turnManager.cpu.party);
+            }
         }
     }
 
@@ -717,26 +725,6 @@ public class Unit : MonoBehaviour
     
     private void LateUpdate()
     {
-        if (Input.GetKey(KeyCode.Escape))
-        {
-            if (this.isSelected)
-            {
-                isSelected = false;
-                //  update the selected animation depending on isSelected being T/F
-                animator.SetBool("selected", isSelected);
-
-                //  hide movement options
-                gridManager.HideAccessibleTiles(this, accessibleTiles);
-                //  mark that no unit is active
-                gridManager.activeUnit = null;
-                //  and the unit controller
-                partyManager.activeUnit = null;
-                //  clear the accessible tiles list
-                accessibleTiles.Clear();
-                uiController.unitSelected = isSelected;
-            }
-        }
-
         if (!this.IsDead)
         {
             this.PopulateAdjacentTiles();
