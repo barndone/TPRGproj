@@ -23,6 +23,8 @@ public class ComputerController : BaseController
         {
             var randomEnemy = possibleEnemies[Random.Range(0, possibleEnemies.Length)];
             GameObject newEnemy = Instantiate(randomEnemy);
+            
+            newEnemy.gameObject.name = "Enemy " + (i + 1);
             party.Add(newEnemy.GetComponent<Unit>());
 
             party[i].mapPosition = new Vector2(startPos.x, startPos.y - i);
@@ -30,6 +32,7 @@ public class ComputerController : BaseController
             party[i].StartOfTurnPos = party[i].mapPosition;
             party[i].ally = false;
             party[i].selectable = false;
+
 
             //  root decision
             CanHealDecision root = new CanHealDecision(party[i]);

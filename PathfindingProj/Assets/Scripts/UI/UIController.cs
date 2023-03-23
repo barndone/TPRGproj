@@ -289,7 +289,7 @@ public class UIController : MonoBehaviour
             //  invert the thing
             foreach (Unit enemy in TurnManager.cpu.party)
             {
-                gridManager.HideAccessibleTiles(enemy, enemy.accessibleTiles);
+                gridManager.ResetTiles();
             }
         }
     }

@@ -28,6 +28,7 @@ public class GridManager : MonoBehaviour
 
     //  const field for water move cost
     [SerializeField] const int WATER_MOVE_COST = 5;
+    [SerializeField] List<Vector2> waterTilePos = new List<Vector2>();
 
     //  reference to the currently active unit
     public Unit activeUnit = null;
@@ -49,10 +50,19 @@ public class GridManager : MonoBehaviour
             //  while col is less than cols
             for (int col = 0; col < cols; col++)
             {
+                GameObject newTileObj;
                 //  create a random tile from the prefab list
-                var randomTile = gridTilePrefab[Random.Range(0, gridTilePrefab.Length)];
-                //  instantiate a new object of that tile at the transform of the parent (grid manager)
-                GameObject newTileObj = Instantiate(randomTile, transform);
+                if (waterTilePos.Contains(new Vector2(row, col)))
+                {
+                    //  instantiate a new object of that tile at the transform of the parent (grid manager)
+                    newTileObj = Instantiate(gridTilePrefab[1], transform);
+                }
+                else
+                {   //  instantiate a new object of that tile at the transform of the parent (grid manager)
+                    newTileObj = Instantiate(gridTilePrefab[0], transform);
+                }
+                
+
 
                 //  get the Tile component
                 newTile = newTileObj.GetComponent<Tile>();
@@ -869,7 +879,24 @@ public class GridManager : MonoBehaviour
         //  for each tile in the list tiles:
         foreach (Tile tile in accessibleTiles)
         {
-            tile.rend.color = tile.defaultColor;
+            if (movingUnit.uiController.showDangerZone)
+            {
+                if (!movingUnit.ally)
+                {
+                    tile.rend.color = Color.magenta;
+                }
+
+                else
+                {
+                    tile.rend.color = tile.defaultColor;
+
+                    CalculateDangerZone(movingUnit.turnManager.cpu.party);
+                }
+            }
+            else
+            {
+                tile.rend.color = tile.defaultColor;
+            }
             tile.Visited = false;
             tile.curScore = 0;
             tile.moveRange = false;
@@ -1362,6 +1389,8 @@ public class GridManager : MonoBehaviour
 
             tile.hScore = 0;
 
+            tile.focusedTile = false;
+
             //  remove the highlight
             tile.highlight = false;
             //  set previous tile to null
@@ -1524,7 +1553,6 @@ public class GridManager : MonoBehaviour
                                     south.curScore += traversalCost + cur.curScore;
 
 
-
                                     //  if so, we can add it to the queue
                                     tilesToTraverse.Enqueue(south);
                                 }
@@ -1560,7 +1588,6 @@ public class GridManager : MonoBehaviour
                                     west.curScore += traversalCost + cur.curScore;
 
 
-
                                     //  if so, we can add it to the queue
                                     tilesToTraverse.Enqueue(west);
                                 }
@@ -1582,12 +1609,11 @@ public class GridManager : MonoBehaviour
                 //  for each tile in the list tiles:
                 foreach (Tile tile in unit.accessibleTiles)
                 {
-                    tile.rend.color = Color.red;
+
+                    tile.rend.color = Color.magenta;
 
                     tile.Visited = false;
                     tile.curScore = 0;
-                    tile.moveRange = false;
-                    tile.actionRange = false;
                 }
             }
         }

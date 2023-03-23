@@ -178,6 +178,8 @@ MonoBehaviour:
   uiController: {fileID: 0}
   turnManager: {fileID: 0}
   partyManager: {fileID: 0}
+  playerFrame: {fileID: 0}
+  targetFrame: {fileID: 0}
   isSelected: 0
   currentTile: {fileID: 0}
   animator: {fileID: 2879690127980965609}
@@ -199,7 +201,7 @@ MonoBehaviour:
   atkRange: 1
   skillRange: 1
   maxMove: 3
-  timeToWait: 0.5
+  timeToWait: 0.3
   ally: 0
   curHealth: 10
   maxHealth: 10

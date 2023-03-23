@@ -91,6 +91,8 @@ public class Tile : MonoBehaviour, IComparer<Tile>
     //  reference to the color of the tile before being highlighted
     public Color prevColor;
 
+    public bool focusedTile = false;
+
 
 
     void Start()
@@ -138,6 +140,8 @@ public class Tile : MonoBehaviour, IComparer<Tile>
                 highlightUnit.uiController.targetFrame.SetActive(true);
                 highlightUnit.targetFrame.UpdateUnitFrame(highlightUnit);
             }
+
+            gridManager.ShowAccessibleTiles(highlightUnit, out highlightUnit.accessibleTiles);
         }
 
     }
@@ -168,6 +172,9 @@ public class Tile : MonoBehaviour, IComparer<Tile>
                 highlightUnit.uiController.targetFrame.SetActive(false);
                 highlightUnit.targetFrame.target = null;
             }
+
+            gridManager.HideAccessibleTiles(highlightUnit, highlightUnit.accessibleTiles);
+
         }
     }
 

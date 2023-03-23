@@ -77,10 +77,11 @@ public class Unit : MonoBehaviour
     public int MaxMove { get { return maxMove; } set { maxMove = value; } }
 
     //  Timer used for delay between moving from tile to tile
-    [SerializeField] private float timeToWait = 0.5f;
+    [SerializeField] private float timeToWait = 0.2f;
     private float timer;
 
     public bool ally = false;
+
 
     //  define the stats shared between all classes
     //  current health of this unit
@@ -301,6 +302,7 @@ public class Unit : MonoBehaviour
                         gridManager.ResetTiles();
 
                         gridManager.ShowAttackableTiles(this, out accessibleTiles);
+
                         if (hasAction)
                         {
                             //  play the skill sound
@@ -372,9 +374,10 @@ public class Unit : MonoBehaviour
         //  if the unit has acted and moved
         if (hasActed && hasMoved)
         {
-            sprite.color = Color.grey;
             waiting = true;
         }
+
+        if (waiting) { sprite.color = Color.grey; }
         //  otherwise, no color change
         else { sprite.color = Color.white; }
 
@@ -390,6 +393,7 @@ public class Unit : MonoBehaviour
                 //  swap the sprite to the gravestone
                 sprite.sprite = deadSprite;
                 sprite.sortingLayerName = "Background";
+                sprite.sortingOrder = 1;
                 this.selectable = false;
                 animator.enabled = false;
 
@@ -472,6 +476,8 @@ public class Unit : MonoBehaviour
             uiController.targetFrame.SetActive(true);
             targetFrame.UpdateUnitFrame(this);
         }
+
+        gridManager.ShowAccessibleTiles(this, out accessibleTiles);
     }
 
     protected void OnMouseExit()
@@ -492,6 +498,8 @@ public class Unit : MonoBehaviour
             uiController.targetFrame.SetActive(false);
             targetFrame.target = null;
         }
+
+        gridManager.HideAccessibleTiles(this, accessibleTiles);
     }
 
     protected void OnMouseOver()
@@ -506,30 +514,34 @@ public class Unit : MonoBehaviour
             {
                 //  check if this unit is on an ally
                 //  AND it is your turn
-                if (turnManager.playerTurn && ally)
+                if (turnManager.playerTurn)
                 {
-                    //  check if the unit has not taken its actions
-                    if (!waiting)
+                    //  if it is an ally:
+                    if (ally)
                     {
-                        //  then we can go through the selection process!
-                        //  swap whether it was selected
-
-
-                        isSelected = !isSelected;
-                        //  update the selected animation depending on isSelected being T/F
-                        animator.SetBool("selected", isSelected);
-
-                        //  if the unit is now selected
-                        if (isSelected)
+                        //  check if the unit has not taken its actions
+                        if (!waiting)
                         {
-                            //  pass that this is the active unit to the grid manager
-                            gridManager.activeUnit = this;
-                            //  and the unit controller
-                            partyManager.activeUnit = this;
-                            //  and the ui controller
-                            uiController.unitSelected = isSelected;
+                            //  then we can go through the selection process!
+                            //  swap whether it was selected
 
-                        playerFrame.UpdateUnitFrame(this);
+
+                            isSelected = !isSelected;
+                            //  update the selected animation depending on isSelected being T/F
+                            animator.SetBool("selected", isSelected);
+
+                            //  if the unit is now selected
+                            if (isSelected)
+                            {
+                                //  pass that this is the active unit to the grid manager
+                                gridManager.activeUnit = this;
+                                //  and the unit controller
+                                partyManager.activeUnit = this;
+                                //  and the ui controller
+                                uiController.unitSelected = isSelected;
+
+                                playerFrame.UpdateUnitFrame(this);
+                            }
                         }
                     }
                 }
@@ -557,7 +569,14 @@ public class Unit : MonoBehaviour
                     }    
                 }
             }
-            //  otherwise, do nothing
+            
+            if (uiController.showDangerZone)
+            {
+                if (!ally)
+                {
+                    gridManager.CalculateDangerZone(turnManager.cpu.party);
+                }
+            }
         }
     }
 
@@ -585,10 +604,8 @@ public class Unit : MonoBehaviour
         //  update the animation to not be selected
         animator.SetBool("selected", isSelected);
 
-        hasActed = true;
-        hasMoved = true;
-
-        target = null;
+        hasActed = false;
+        hasMoved = false;
 
         //  hide the accessible tiles of the unit
         gridManager.HideAccessibleTiles(this, accessibleTiles);
@@ -599,6 +616,7 @@ public class Unit : MonoBehaviour
         accessibleTiles.Clear();
         gridManager.ResetTiles();
         uiController.ResetFlags();
+
         waiting = true;
 
         //  if the unit is stunned

@@ -77,6 +77,12 @@ public class EnemyInRangeDecision : IDecision
                             //  then we don't have to do anything! this is our target!
                         }
 
+                        //  check if this unit can reach it
+                        else if (agent.gridManager.CalculateAStarPath(agent.mapPosition, agent.target.mapPosition, out agent.pathToMove))
+                        {
+                            agent.target.unitCantBeReached = false;
+                        }
+
                         else
                         {
                             agent.target = null;

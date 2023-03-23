@@ -27,10 +27,18 @@ public class Ranger : Unit
 
 
                     int damage = (this.Attack - target.Defence) * 2;
+
                     //  time to attack!
                     target.CurHealth -= damage;
                     this.dmgDone_val += damage;
                     target.dmgTaken_val += damage;
+
+                    //  play the skill sound
+                    audioSource.PlayOneShot(skillSound);
+                    //  find a random damage taken sound
+                    var randomDamageSound = target.dmgTaken[Random.Range(0, dmgTaken.Length)];
+                    //  play that random sound
+                    target.audioSource.PlayOneShot(randomDamageSound);
 
                     this.hasAction = false;
                     this.hasActed = true;
