@@ -271,12 +271,5 @@ public class Tile : MonoBehaviour, IComparer<Tile>
                 }
             }
         }
-
-        //  if right mouse button is pressed:
-        if (Input.GetMouseButtonDown(1))
-        {
-            //  cycle between ground/water states for the clicked tile
-            FindObjectOfType<GridManager>().UpdateTile(this.transform.position);
-        }
     }
 }
